@@ -3,9 +3,9 @@ package core
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	// "errors"
 	"fmt"
-	"math/rand"
+	// "math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -13,7 +13,7 @@ import (
 	"time"
 	"v5sdk_go/rest"
 	"v5sdk_go/ws"
-	"v5sdk_go/ws/wImpl"
+	// "v5sdk_go/ws/wImpl"
 
 	simple "github.com/bitly/go-simplejson"
 	"github.com/go-redis/redis"
@@ -26,9 +26,11 @@ type Core struct {
 	Cfg           *MyConfig
 	RedisCli      *redis.Client
 	RedisCli2     *redis.Client
+	FluentBitUrl  string
 	Wg            sync.WaitGroup
 	RestQueueChan chan *RestQueue
 	OrderChan     chan *private.Order
+	WriteLogChan  chan *WriteLog
 }
 type RestQueue struct {
 	InstId   string
@@ -70,6 +72,15 @@ func (rst *RestQueue) Save(cr *Core) {
 	cr.SaveCandle(rst.InstId, rst.Bar, rsp, rst.Duration, rst.WithWs)
 }
 
+func WriteLogProcess(cr *Core) {
+	for {
+		wg := <-cr.WriteLogChan
+		go func(wg *WriteLog) {
+			wg.Process(cr)
+		}(wg)
+	}
+}
+
 func (cr *Core) ShowSysTime() {
 	rsp, _ := cr.RestInvoke("/api/v5/public/time", rest.GET)
 	fmt.Println("serverSystem time:", rsp)
@@ -93,107 +104,6 @@ func (core *Core) Init() {
 	if err != nil {
 		fmt.Println("init redis client err: ", err)
 	}
-}
-
-func (core *Core) GetWsCli() (*ws.WsClient, error) {
-	url, err := core.Cfg.Config.Get("connect").Get("wsPublicBaseUrl").String()
-	if err != nil {
-		fmt.Println("err of json decode: ", err)
-	}
-	pubCli, err := ws.NewWsClient("wss://" + url)
-	pubCli.AddBookMsgHook(core.PubMsgDispatcher)
-
-	if err != nil {
-		fmt.Println("err of create ublic ws cli:", err)
-	}
-	return pubCli, err
-}
-
-func (core *Core) DispatchDownstreamNodes(originName string) string {
-	nodesStr := os.Getenv("TUNAS_DOWNSTREAM_NODES")
-	if len(nodesStr) == 0 {
-		return ""
-	}
-	nodes := strings.Split(nodesStr, "|")
-	count := len(nodes)
-	idx := utils.HashDispatch(originName, uint8(count))
-	return nodes[idx]
-}
-
-func (core *Core) Dispatch(channel string, ctype string, instId string, data interface{}) error {
-	// fmt.Println("start to SaveToRedis:", channel, ctype, instId, data)
-	b, err := json.Marshal(data)
-	js, err := simple.NewJson(b)
-	if err != nil {
-		fmt.Println("err of unMarshalJson1:", js)
-	}
-
-	isUsdt := strings.Contains(instId, "-USDT")
-	instType, err := js.Get("instType").String()
-	if !isUsdt {
-		return err
-	}
-
-	// fmt.Println("instId: ", instId)
-	redisCli := core.RedisCli
-	channelType := ""
-	if channel == "instruments" {
-		channelType = "instruments"
-	} else if strings.Contains(channel, "candle") {
-		channelType = "candle"
-	}
-	switch channelType {
-	case "instruments":
-		{
-			// fmt.Println("isInstrument:", instId)
-			if instType != "SPOT" {
-				return errors.New("instType is not SPOT")
-			}
-			_, err = redisCli.HSet("instruments|"+ctype+"|hash", instId, b).Result()
-			if err != nil {
-				fmt.Println("err of hset to redis:", err)
-			}
-			break
-		}
-	case "candle":
-		{
-			data := data.([]interface{})
-			ary := strings.Split(channel, "candle")
-			// fmt.Println("dispatch candle:", ary[1], instId)
-			candle := Candle{
-				InstId: instId,
-				Period: ary[1],
-				Data:   data,
-				From:   "ws",
-			}
-			core.WsSubscribe(&candle)
-			saveCandle := os.Getenv("TUNAS_SAVECANDLE")
-			if saveCandle == "true" {
-				candle.SetToKey(core)
-			}
-			// TODO mxLen要放到core.Cfg里
-			arys := []string{ALLCANDLES_PUBLISH}
-			core.AddToGeneralCandleChnl(&candle, arys)
-			break
-		}
-
-	default:
-		{
-			// data := data.([]interface{})
-			// bj, _ := json.Marshal(data)
-			// fmt.Println("private data:", string(bj))
-			return errors.New("channel type not catched")
-		}
-	}
-	return nil
-}
-
-func (core *Core) PubMsgDispatcher(ts time.Time, data wImpl.MsgData) error {
-	instList := data.Data
-	for _, v := range instList {
-		core.Dispatch(data.Arg["channel"], data.Arg["instType"], data.Arg["instId"], v)
-	}
-	return nil
 }
 
 func (core *Core) GetRedisCli() (*redis.Client, error) {
@@ -290,78 +200,6 @@ func (core *Core) SubscribeTicker(op string) error {
 		}(k, op)
 	}
 	return nil
-}
-
-func (core *Core) InnerSubscribeTicker(name string, op string, retry bool) error {
-	// 在这里 args1 初始化tickerList的列表
-	var args []map[string]string
-	arg := make(map[string]string)
-	arg["instId"] = name
-	arg["instType"] = ws.SPOT
-	args = append(args, arg)
-
-	if retry {
-		go func(op string, args []map[string]string) {
-			core.retrySubscribe(op, args)
-		}(op, args)
-	} else {
-		go func(op string, args []map[string]string) {
-			core.OnceSubscribe(op, args)
-		}(op, args)
-	}
-	return nil
-}
-
-func (core *Core) OnceSubscribe(op string, args []map[string]string) error {
-	wsCli, _ := core.GetWsCli()
-	res, _, err := wsCli.PubTickers(op, args)
-	// defer wsCli.Stop()
-	start := time.Now()
-	if err != nil {
-		fmt.Println("pubTickers err:", err)
-	}
-	if res {
-		usedTime := time.Since(start)
-		fmt.Println("订阅成功！", usedTime.String())
-	} else {
-		fmt.Println("订阅失败！", err)
-	}
-	return err
-}
-
-func (core *Core) retrySubscribe(op string, args []map[string]string) error {
-	wsCli, _ := core.GetWsCli()
-	res, _, err := wsCli.PubTickers(op, args)
-	start := time.Now()
-	if err != nil {
-		r := rand.New(rand.NewSource(time.Now().UnixNano()))
-		val := r.Int() / 20000000000000000
-		fmt.Println("pubTickers err:", err, val, "秒后重试")
-		time.Sleep(time.Duration(val) * time.Second)
-
-		return core.retrySubscribe(op, args)
-	}
-	if res {
-		usedTime := time.Since(start)
-		fmt.Println("订阅成功！", usedTime.String())
-	} else {
-		fmt.Println("订阅失败！", err)
-	}
-	return err
-}
-
-func (core *Core) TickerScore(score float64, name string) error {
-
-	redisCli := core.RedisCli
-	mb := redis.Z{
-		Score:  score,
-		Member: name,
-	}
-	_, err := redisCli.ZAdd("tradingRank", mb).Result()
-	if err != nil {
-		fmt.Println("zadd err:", err)
-	}
-	return err
 }
 
 func (core *Core) RestInvoke(subUrl string, method string) (*rest.RESTAPIResult, error) {
@@ -473,90 +311,12 @@ func (core *Core) GetScoreList(count int) []string {
 
 	redisCli := core.RedisCli
 
-	curList, err := redisCli.ZRevRange("tickersList|sortedSet", 0, int64(count-1)).Result()
+	curList, err := redisCli.ZRange("tickersList|sortedSet", 0, int64(count-1)).Result()
 	if err != nil {
 		fmt.Println("zrevrange err:", err)
 	}
+	fmt.Println("curList: ", curList)
 	return curList
-}
-
-func (core *Core) SubscribeCandleWithDimention(op string, instIdList []string, dimension string) {
-	wsCli, err := core.GetWsCli()
-	if err != nil {
-		fmt.Println("ws client err", err)
-	}
-	err = wsCli.Start()
-	// 创建ws客户端
-	if err != nil {
-		fmt.Println("ws client start err", err)
-	}
-
-	var args []map[string]string
-	for _, vs := range instIdList {
-		arg := make(map[string]string)
-		arg["instId"] = vs
-		args = append(args, arg)
-	}
-	_, _, err = wsCli.PubKLine(op, wImpl.Period(dimension), args)
-	if err != nil {
-		fmt.Println("pubTickers err:", err)
-	}
-
-}
-
-// 订阅某币，先要和配置比对，是否允许订阅此币此周期，
-func (core *Core) WsSubscribe(candle *Candle) error {
-	wsPeriods := []string{}
-	wsary := core.Cfg.Config.Get("wsDimentions").MustArray()
-	for _, v := range wsary {
-		wsPeriods = append(wsPeriods, v.(string))
-	}
-	redisCli := core.RedisCli
-	period := candle.Period
-	instId := candle.InstId
-	from := candle.From
-	sname := instId + "|" + period + "ts|Subscribed|key"
-
-	exists, _ := redisCli.Exists(sname).Result()
-	ttl, _ := redisCli.TTL(sname).Result()
-	inAry, _ := utils.In_Array(period, wsPeriods)
-	if !inAry {
-		estr := "subscribe 在配置中此period未被订阅: " + "," + period
-		// fmt.Println(estr)
-		err := errors.New(estr)
-		return err
-	} else {
-		fmt.Println("subscribe 已经订阅: ", period)
-	}
-	waitWs, _ := core.Cfg.Config.Get("threads").Get("waitWs").Int64()
-	willSub := false
-	if exists > 0 {
-		if ttl > 0 {
-			if from == "ws" {
-				redisCli.Expire(sname, time.Duration(waitWs)*time.Second).Result()
-			}
-		} else {
-			willSub = true
-		}
-	} else {
-		willSub = true
-	}
-
-	if willSub {
-		// 需要订阅
-
-		instIdList := []string{}
-		instIdList = append(instIdList, instId)
-
-		core.SubscribeCandleWithDimention(ws.OP_SUBSCRIBE, instIdList, period)
-		// 如果距离上次检查此candle此维度订阅状态已经过去超过2分钟还没有发现有ws消息上报，执行订阅
-		dr := 1 * time.Duration(waitWs) * time.Second
-		redisCli.Set(sname, 1, dr).Result()
-	} else {
-		// fmt.Println("拒绝订阅candles:", keyName, "tm: ", tm, "otsi:", otsi)
-	}
-
-	return nil
 }
 
 func LoopBalances(cr *Core, mdura time.Duration) {

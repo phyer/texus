@@ -28,7 +28,7 @@
       "maxTickers":3,
       "restPeriod": 180,
       "waitWs": 120
-    },
+    }
   },
 	"stage": {
 		"redis": {

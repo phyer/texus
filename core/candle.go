@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"os"
+	// "os"
 	"strconv"
 	"strings"
 	"time"
@@ -157,8 +157,6 @@ func (core *Core) SaveCandle(instId string, period string, rsp *rest.RESTAPIResu
 	}
 	itemList := js.Get("data").MustArray()
 	Daoxu(itemList)
-
-	leng := len(itemList)
 	for _, v := range itemList {
 		candle := Candle{
 			InstId: instId,
@@ -166,18 +164,7 @@ func (core *Core) SaveCandle(instId string, period string, rsp *rest.RESTAPIResu
 			Data:   v.([]interface{}),
 			From:   "rest",
 		}
-		//保存rest得到的candle
-		saveCandle := os.Getenv("TUNAS_SAVECANDLE")
-		if saveCandle == "true" {
-			candle.SetToKey(core)
-		}
-		// 发布到allCandles|publish, 给外部订阅者用于setToKey,和给其他协程用于订阅ws
-		arys := []string{ALLCANDLES_PUBLISH}
-		if withWs {
-			arys = append(arys, ALLCANDLES_INNER_PUBLISH)
-		}
-		core.AddToGeneralCandleChnl(&candle, arys)
-		time.Sleep(dura / time.Duration(leng))
+		candle.SetToKey(core)
 	}
 }
 
@@ -220,7 +207,7 @@ func (cl *Candle) SetToKey(core *Core) ([]interface{}, error) {
 	// tm := time.UnixMilli(tsi).Format("2006-01-02 15:04")
 	// fmt.Println("setToKey:", keyName, "ts: ", tm, "price: ", curPrice, "from:", cl.From)
 	redisCli.Set(keyName, dt, extt).Result()
-	core.SaveUniKey(cl.Period, keyName, extt, tsi)
+	core.SaveUniKey(cl.Period, keyName, extt, tsi, cl)
 	return cl.Data, err
 }
 
@@ -244,13 +231,23 @@ func (mx *MaX) SetToKey() ([]interface{}, error) {
 	return dt, err
 }
 
-func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, tsi int64) {
+// 保证同一个 period, keyName ，在一个周期里，SaveToSortSet只会被执行一次
+func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, tsi int64, cl *Candle) {
 	refName := keyName + "|refer"
 	refRes, _ := core.RedisCli.GetSet(refName, 1).Result()
 	core.RedisCli.Expire(refName, extt)
-	if len(refRes) == 0 {
-		core.SaveToSortSet(period, keyName, extt, tsi)
+	if len(refRes) != 0 {
+		return
 	}
+	cd, _ := json.Marshal(cl)
+	wg := WriteLog{
+		Content: cd,
+		Tag:     "sardine.log.candle." + cl.Period,
+	}
+	go func() {
+		core.WriteLogChan <- &wg
+	}()
+	core.SaveToSortSet(period, keyName, extt, tsi)
 }
 
 // tsi: 上报时间timeStamp millinSecond
@@ -384,67 +381,4 @@ func (core *Core) GetRangeKeyList(pattern string, from time.Time) ([]*simple.Jso
 	}
 
 	return res, nil
-}
-
-func (core *Core) InitStreamGroups() {
-	redisCli := core.RedisCli
-	streamNames := []string{
-		"candles|stream",
-		"maXs|stream",
-	}
-	grpNames := []string{
-		"sardine1",
-		"sardine2",
-		"sardine3",
-	}
-	for _, v := range streamNames {
-		for _, vv := range grpNames {
-			redisCli.XGroupCreate(v, vv, "0-0").Result()
-		}
-	}
-}
-func (cr *Core) AddToGeneralCandleChnl(candle *Candle, channels []string) {
-	//只让特定概率的事件发生
-	// r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	// val := r.Float64()
-	// rand.Seed(time.Now().UnixNano())
-	// if from == "ws" && val > 0.90 {
-	// fmt.Println("drop ", from)
-	// return
-	// }
-	// fmt.Println("not drop ", from)
-	// TODO map
-	redisCli := cr.RedisCli
-
-	ab, _ := json.Marshal(candle)
-	//特定的币只发送给特定的下游接收者
-	// 这么设计不太好，业务逻辑和程序架构紧耦合了，
-	prename := cr.DispatchDownstreamNodes(candle.InstId)
-
-	for _, v := range channels {
-		suffix := ""
-		env := os.Getenv("GO_ENV")
-		if env == "demoEnv" {
-			suffix = "-demoEnv"
-		}
-		vd := v + suffix
-
-		// TODO FIXME cli2
-		_, err := redisCli.Publish(vd, string(ab)).Result()
-		if len(prename) == 0 {
-			continue
-		}
-		nodeAdd := prename + "|" + v + suffix
-		// fmt.Println("nodeAdd: ", nodeAdd)
-
-		// TODO FIXME cli2
-		_, err = redisCli.Publish(nodeAdd, string(ab)).Result()
-		// fmt.Println("publish, channel,res,err:", nodeAdd, res, err, "candle:", string(ab))
-
-		if err != nil {
-			fmt.Println("err of ma7|ma30 add to redis2:", err, candle.From)
-		}
-	}
-	// TODO 下面这个先屏蔽，不订阅ws信息，否则系统压力会太大，等有更灵活的机制再说
-	// redisCli.Publish("allCandlesInner|publish"+suffix, string(ab)).Result()
 }
