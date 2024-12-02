@@ -72,15 +72,6 @@ func (rst *RestQueue) Save(cr *Core) {
 	cr.SaveCandle(rst.InstId, rst.Bar, rsp, rst.Duration, rst.WithWs)
 }
 
-func WriteLogProcess(cr *Core) {
-	for {
-		wg := <-cr.WriteLogChan
-		go func(wg *WriteLog) {
-			wg.Process(cr)
-		}(wg)
-	}
-}
-
 func (cr *Core) ShowSysTime() {
 	rsp, _ := cr.RestInvoke("/api/v5/public/time", rest.GET)
 	fmt.Println("serverSystem time:", rsp)

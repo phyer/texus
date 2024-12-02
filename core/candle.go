@@ -244,9 +244,8 @@ func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, 
 		Content: cd,
 		Tag:     "sardine.log.candle." + cl.Period,
 	}
-	go func() {
-		core.WriteLogChan <- &wg
-	}()
+	err := wg.Process(core)
+	fmt.Println("writeLog err:", err)
 	core.SaveToSortSet(period, keyName, extt, tsi)
 }
 
