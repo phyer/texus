@@ -125,7 +125,7 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 	go func() {
 		for {
 			tsi := time.Now().Unix()
-			fmt.Println("tsi, period, delay, tsi%(period): ", tsi, period, delay, tsi%(period))
+			//fmt.Println("tsi, period, delay, tsi%(period): ", tsi, period, delay, tsi%(period))
 			if tsi%(period) != delay {
 				time.Sleep(1 * time.Second)
 				continue

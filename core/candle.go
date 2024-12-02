@@ -262,7 +262,7 @@ func (core *Core) SaveToSortSet(period string, keyName string, extt time.Duratio
 	if err != nil {
 		fmt.Println("err of ma7|ma30 add to redis:", err)
 	} else {
-		fmt.Println("sortedSet add to redis:", rs, keyName)
+		fmt.Println("sortedSet added to redis:", rs, keyName)
 	}
 }
 
