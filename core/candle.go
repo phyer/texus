@@ -18,6 +18,7 @@ import (
 
 type Candle struct {
 	core      *Core
+	Id        string `json:"_id"`
 	InstId    string
 	Period    string
 	Data      []interface{}
@@ -175,6 +176,7 @@ func Daoxu(arr []interface{}) {
 func (cl *Candle) ToStruct(core *Core) error {
 	// cl.Timestamp
 
+	cl.Id = cl.InstId + "." + cl.Period + "." + cl.Data[0].(string)
 	// 将字符串转换为 int64 类型的时间戳
 	ts, err := strconv.ParseInt(cl.Data[0].(string), 10, 64)
 	if err != nil {
