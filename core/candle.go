@@ -186,9 +186,6 @@ func hashString(input string) string {
 func (cl *Candle) ToStruct(core *Core) error {
 	// cl.Timestamp
 
-	str := cl.InstId + "." + cl.Period + "." + cl.Data[0].(string)
-	cl.Id = hashString(str)
-
 	// 将字符串转换为 int64 类型的时间戳
 	ts, err := strconv.ParseInt(cl.Data[0].(string), 10, 64)
 	if err != nil {
@@ -287,11 +284,14 @@ func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, 
 		fmt.Println("refName exist: ", refName)
 		return
 	}
+
+	did := cl.InstId + cl.Period + cl.Data[0].(string)
 	cl.ToStruct(core)
 	cd, _ := json.Marshal(cl)
 	wg := WriteLog{
 		Content: cd,
 		Tag:     "sardine.log.candle." + cl.Period,
+		Id:      hashString(did),
 	}
 	err = wg.Process(core)
 	if err != nil {
