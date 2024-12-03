@@ -180,7 +180,7 @@ func hashString(input string) string {
 	// 转换为十六进制字符串
 	hashHex := hex.EncodeToString(hash[:])
 	// 返回前20位
-	return hashHex[:20]
+	return hashHex[:23]
 }
 
 func (cl *Candle) ToStruct(core *Core) error {
