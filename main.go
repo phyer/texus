@@ -104,7 +104,12 @@ func LoopSaveCandle(cr *core.Core) {
 		// after:  restQueue-USDT
 		go func() {
 			restQ.Show(cr)
-			restQ.Save(cr)
+			restQ.Sav	lo, err := strconv.ParseFloat(cl.Data[3].(string), 64)
+	if err != nil {
+		fmt.Println("Error parsing string to float64:", err)
+		return err
+	}
+	cl.Low = loe(cr)
 		}()
 	}
 }
@@ -119,7 +124,7 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 	cr := core.Core{}
 	cr.Init()
 	allScoreChan := make(chan []string)
-	fmt.Println("allCoins1")
+	fmt.Println("start LoopAllCoinsList: period: ", period, " delay: ", delay, " mdura:", mdura, " barPeriod: ",barPeriod, " onceCount: ", onceCount, " rge:", rge)
 	per1 := 1 * time.Minute
 	ticker := time.NewTicker(per1)
 	go func() {
