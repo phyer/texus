@@ -74,7 +74,10 @@ func (rst *RestQueue) Save(cr *Core) {
 	link := "/api/v5/market/candles?instId=" + rst.InstId + "&bar=" + rst.Bar + limitSec + afterSec + beforeSec
 
 	fmt.Println("restLink: ", link)
-	rsp, _ := cr.v5PublicInvoke(link)
+	rsp, err := cr.v5PublicInvoke(link)
+	if err != nil {
+		fmt.Println("cr.v5PublicInvoke err:", err)
+	}
 	cr.SaveCandle(rst.InstId, rst.Bar, rsp, rst.Duration, rst.WithWs)
 }
 
