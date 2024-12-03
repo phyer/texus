@@ -17,11 +17,16 @@ import (
 )
 
 type Candle struct {
-	core   *Core
-	InstId string
-	Period string
-	Data   []interface{}
-	From   string
+	core      *Core
+	InstId    string
+	Period    string
+	Data      []interface{}
+	From      string
+	Timestamp time.Time
+	Open      float64
+	High      float64
+	Low       float64
+	Close     float64
 }
 
 type MaX struct {
@@ -178,6 +183,45 @@ func Daoxu(arr []interface{}) {
 	}
 }
 
+func (cl *Candle) ToStruct(core *Core) error {
+	// cl.Timestamp
+
+	// 将字符串转换为 int64 类型的时间戳
+	ts, err := strconv.ParseInt(cl.Data[0].(string), 10, 64)
+	if err != nil {
+		fmt.Println("Error parsing timestamp:", err)
+		return err
+	}
+	cl.Timestamp = time.Unix(ts/1000, (ts%1000)*1000000) // 纳秒级别
+	op, err := strconv.ParseFloat(cl.Data[1].(string), 64)
+	if err != nil {
+		fmt.Println("Error parsing string to float64:", err)
+		return err
+	}
+	cl.Open = op
+	hi, err := strconv.ParseFloat(cl.Data[2].(string), 64)
+	if err != nil {
+		fmt.Println("Error parsing string to float64:", err)
+		return err
+	}
+	cl.High = hi
+	lo, err := strconv.ParseFloat(cl.Data[3].(string), 64)
+	if err != nil {
+		fmt.Println("Error parsing string to float64:", err)
+		return err
+	}
+	cl.Low = lo
+	clse, err := strconv.ParseFloat(cl.Data[4].(string), 64)
+
+	if err != nil {
+		fmt.Println("Error parsing string to float64:", err)
+		return err
+	}
+	cl.Close = clse
+	cl.Data = nil
+
+	return nil
+}
 func (cl *Candle) SetToKey(core *Core) ([]interface{}, error) {
 	data := cl.Data
 	tsi, err := strconv.ParseInt(data[0].(string), 10, 64)
@@ -239,6 +283,7 @@ func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, 
 	if len(refRes) != 0 {
 		return
 	}
+	cl.ToStruct(core)
 	cd, _ := json.Marshal(cl)
 	wg := WriteLog{
 		Content: cd,
