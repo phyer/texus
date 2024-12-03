@@ -77,6 +77,8 @@ func (rst *RestQueue) Save(cr *Core) {
 	rsp, err := cr.v5PublicInvoke(link)
 	if err != nil {
 		fmt.Println("cr.v5PublicInvoke err:", err)
+	} else {
+		fmt.Println("cr.v5PublicInvoke result count:", len(rsp.Data))
 	}
 	cr.SaveCandle(rst.InstId, rst.Bar, rsp, rst.Duration, rst.WithWs)
 }
