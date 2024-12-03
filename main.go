@@ -112,6 +112,7 @@ func LoopSaveCandle(cr *core.Core) {
 // period: 每个循环开始的时间点，单位：秒
 // delay：延时多少秒后去取此值, 单位：秒
 // mdura：多少个分钟之内，遍历完获取到的goins列表, 单位：秒
+// barPeriod: 周期名字
 // onceCount：每次获取这个coin几个当前周期的candle数据
 // range: 随机的范围，从0开始到range个周期，作为查询的after值，也就是随机n个周期，去取之前的记录,对于2D，5D等数据，可以用来补全数据, range值越大，随机散点的范围越大, 越失焦
 
@@ -187,6 +188,16 @@ func main() {
 				RestTicker(&cr, per1)
 			}()
 		}
+	}()
+	// 全员15m candle
+	go func() {
+		fmt.Println("LoopAllCoinsList2")
+		LoopAllCoinsList(380, 90, 380, "15m", 4, 7)
+	}()
+	// 全员30m candle
+	go func() {
+		fmt.Println("LoopAllCoinsList2")
+		LoopAllCoinsList(510, 90, 500, "30m", 5, 8)
 	}()
 	// 全员1H candle
 	go func() {
