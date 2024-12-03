@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"math/rand"
 	// "os"
+	"crypto/sha256"
+	"encoding/hex"
 	"strconv"
 	"strings"
 	"time"
@@ -172,11 +174,21 @@ func Daoxu(arr []interface{}) {
 		arr[length-1-i] = temp
 	}
 }
+func hashString(input string) string {
+	// 计算SHA-256哈希值
+	hash := sha256.Sum256([]byte(input))
+	// 转换为十六进制字符串
+	hashHex := hex.EncodeToString(hash[:])
+	// 返回前20位
+	return hashHex[:20]
+}
 
 func (cl *Candle) ToStruct(core *Core) error {
 	// cl.Timestamp
 
-	cl.Id = cl.InstId + "." + cl.Period + "." + cl.Data[0].(string)
+	str := cl.InstId + "." + cl.Period + "." + cl.Data[0].(string)
+	cl.Id = hashString(str)
+
 	// 将字符串转换为 int64 类型的时间戳
 	ts, err := strconv.ParseInt(cl.Data[0].(string), 10, 64)
 	if err != nil {
