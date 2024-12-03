@@ -270,6 +270,7 @@ func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, 
 	refRes, err := core.RedisCli.GetSet(refName, 1).Result()
 	core.RedisCli.Expire(refName, extt)
 	if len(refRes) != 0 || err == nil {
+		fmt.Println("refName exist: ", refName)
 		return
 	}
 	cl.ToStruct(core)
