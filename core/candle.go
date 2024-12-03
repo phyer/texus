@@ -290,7 +290,9 @@ func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, 
 		Tag:     "sardine.log.candle." + cl.Period,
 	}
 	err := wg.Process(core)
-	fmt.Println("writeLog err:", err)
+	if err != nil {
+		fmt.Println("writeLog err:", err)
+	}
 	core.SaveToSortSet(period, keyName, extt, tsi)
 }
 
