@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"v5sdk_go/rest"
+	// "v5sdk_go/rest"
 
 	simple "github.com/bitly/go-simplejson"
 	"github.com/go-redis/redis"
@@ -150,23 +150,12 @@ func IsModOf(curInt int64, duration time.Duration) bool {
 	return false
 }
 
-func (core *Core) SaveCandle(instId string, period string, rsp *rest.RESTAPIResult, dura time.Duration, withWs bool) {
-	js, err := simple.NewJson([]byte(rsp.Body))
-	if err != nil {
-		fmt.Println("restTicker err: ", err, rsp.Body)
-		return
-	}
-	if len(rsp.Body) == 0 {
-		fmt.Println("rsp body is null")
-		return
-	}
-	itemList := js.Get("data").MustArray()
-	Daoxu(itemList)
-	for _, v := range itemList {
+func (core *Core) SaveCandle(instId string, period string, rsp *CandleData, dura time.Duration, withWs bool) {
+	for _, v := range rsp.Data {
 		candle := Candle{
 			InstId: instId,
 			Period: period,
-			Data:   v.([]interface{}),
+			Data:   v,
 			From:   "rest",
 		}
 		candle.SetToKey(core)

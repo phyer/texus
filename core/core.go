@@ -6,6 +6,8 @@ import (
 	// "errors"
 	"fmt"
 	// "math/rand"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -41,7 +43,11 @@ type RestQueue struct {
 	Duration time.Duration
 	WithWs   bool
 }
-
+type CandleData struct {
+	Code string          `json:"code"`
+	Msg  string          `json:"msg"`
+	Data [][]interface{} `json:"data"` // 用二维数组来接收 candles 数据
+}
 type SubAction struct {
 	ActionName string
 	ForAll     bool
@@ -68,7 +74,7 @@ func (rst *RestQueue) Save(cr *Core) {
 	link := "/api/v5/market/candles?instId=" + rst.InstId + "&bar=" + rst.Bar + limitSec + afterSec + beforeSec
 
 	fmt.Println("restLink: ", link)
-	rsp, _ := cr.RestInvoke(link, rest.GET)
+	rsp, _ := cr.v5PublicInvoke(link)
 	cr.SaveCandle(rst.InstId, rst.Bar, rsp, rst.Duration, rst.WithWs)
 }
 
@@ -193,6 +199,22 @@ func (core *Core) SubscribeTicker(op string) error {
 	return nil
 }
 
+func (core *Core) v5PublicInvoke(subUrl string) (*CandleData, error) {
+	restUrl, _ := core.Cfg.Config.Get("connect").Get("restBaseUrl").String()
+	url := restUrl + subUrl
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	var result CandleData
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
 func (core *Core) RestInvoke(subUrl string, method string) (*rest.RESTAPIResult, error) {
 	restUrl, _ := core.Cfg.Config.Get("connect").Get("restBaseUrl").String()
 	//ep, method, uri string, param *map[string]interface{}
