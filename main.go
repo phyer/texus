@@ -242,6 +242,9 @@ func main() {
 	go func() {
 		LoopSaveCandle(&cr)
 	}()
+	go func() {
+		core.WriteLogProcess(&cr)
+	}()
 	// 永久阻塞
 	select {}
 }

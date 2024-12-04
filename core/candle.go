@@ -280,10 +280,6 @@ func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, 
 	refName := keyName + "|refer"
 	refRes, err := core.RedisCli.GetSet(refName, 1).Result()
 	core.RedisCli.Expire(refName, extt)
-	if len(refRes) != 0 {
-		fmt.Println("refName exist: ", refName)
-		return
-	}
 
 	did := cl.InstId + cl.Period + cl.Data[0].(string)
 	cl.Id = hashString(did)
@@ -294,10 +290,19 @@ func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, 
 		Tag:     "sardine.log.candle." + cl.Period,
 		// Id:      hashString(did),
 	}
-	err = wg.Process(core)
+	go func() {
+		core.WriteLogChan <- &wg
+	}()
+	// err = wg.Process(core)
 	if err != nil {
 		fmt.Println("writeLog err:", err)
 	}
+
+	if len(refRes) != 0 {
+		fmt.Println("refName exist: ", refName)
+		return
+	}
+
 	core.SaveToSortSet(period, keyName, extt, tsi)
 }
 
