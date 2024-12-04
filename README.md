@@ -10,6 +10,7 @@ git submodule update --force --recursive --init --remote
 go mod tidy
 go mod vendor
 
+
 ## How TO RUN
 
 go run main.go
