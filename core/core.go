@@ -112,6 +112,7 @@ func (core *Core) Init() {
 	cli, err := core.GetRedisCli()
 	core.RedisCli = cli
 	core.RestQueueChan = make(chan *RestQueue)
+	core.WriteLogChan = make(chan *WriteLog)
 	core.OrderChan = make(chan *private.Order)
 	if err != nil {
 		fmt.Println("init redis client err: ", err)

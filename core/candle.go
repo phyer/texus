@@ -284,14 +284,14 @@ func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, 
 	did := cl.InstId + cl.Period + cl.Data[0].(string)
 	cl.Id = hashString(did)
 	cl.ToStruct(core)
-	// cd, _ := json.Marshal(cl)
-	// wg := WriteLog{
-	// 	Content: cd,
-	// 	Tag:     "sardine.log.candle." + cl.Period,
-	// 	Id:      hashString(did),
-	// }
+	cd, _ := json.Marshal(cl)
+	wg := WriteLog{
+		Content: cd,
+		Tag:     "sardine.log.candle." + cl.Period,
+		Id:      hashString(did),
+	}
 	// go func() {
-	// core.WriteLogChan <- &wg
+	core.WriteLogChan <- &wg
 	// }()
 	// err = wg.Process(core)
 
