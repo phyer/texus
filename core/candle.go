@@ -278,25 +278,22 @@ func (mx *MaX) SetToKey() ([]interface{}, error) {
 // 保证同一个 period, keyName ，在一个周期里，SaveToSortSet只会被执行一次
 func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, tsi int64, cl *Candle) {
 	refName := keyName + "|refer"
-	refRes, err := core.RedisCli.GetSet(refName, 1).Result()
+	refRes, _ := core.RedisCli.GetSet(refName, 1).Result()
 	core.RedisCli.Expire(refName, extt)
 
 	did := cl.InstId + cl.Period + cl.Data[0].(string)
 	cl.Id = hashString(did)
 	cl.ToStruct(core)
-	cd, _ := json.Marshal(cl)
-	wg := WriteLog{
-		Content: cd,
-		Tag:     "sardine.log.candle." + cl.Period,
-		Id:      hashString(did),
-	}
+	// cd, _ := json.Marshal(cl)
+	// wg := WriteLog{
+	// 	Content: cd,
+	// 	Tag:     "sardine.log.candle." + cl.Period,
+	// 	Id:      hashString(did),
+	// }
 	// go func() {
-	core.WriteLogChan <- &wg
+	// core.WriteLogChan <- &wg
 	// }()
 	// err = wg.Process(core)
-	if err != nil {
-		fmt.Println("writeLog err:", err)
-	}
 
 	if len(refRes) != 0 {
 		fmt.Println("refName exist: ", refName)
