@@ -288,7 +288,7 @@ func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, 
 	wg := WriteLog{
 		Content: cd,
 		Tag:     "sardine.log.candle." + cl.Period,
-		// Id:      hashString(did),
+		Id:      hashString(did),
 	}
 	// go func() {
 	core.WriteLogChan <- &wg
