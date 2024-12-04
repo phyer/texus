@@ -20,7 +20,7 @@ func (wg *WriteLog) Process(cr *Core) error {
 		reqBody := bytes.NewBuffer(wg.Content)
 		cr.Env = os.Getenv("GO_ENV")
 		cr.FluentBitUrl = os.Getenv("TEXUS_FluentBitUrl")
-		fullUrl := "http://" + cr.FluentBitUrl + "/" + wg.Tag + "/_doc/" + wg.Id
+		fullUrl := "http://" + cr.FluentBitUrl + "/" + wg.Tag
 		res, err := http.Post(fullUrl, "application/json", reqBody)
 
 		fmt.Println("requested, response:", fullUrl, string(wg.Content), res)
