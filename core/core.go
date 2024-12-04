@@ -87,7 +87,7 @@ func WriteLogProcess(cr *Core) {
 	for {
 		wg := <-cr.WriteLogChan
 		go func(wg *WriteLog) {
-			fmt.Println("start writelog: " + wg.Id)
+			fmt.Println("start writelog: " + wg.Tag + " " + wg.Id)
 			wg.Process(cr)
 		}(wg)
 	}
