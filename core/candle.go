@@ -277,10 +277,6 @@ func (mx *MaX) SetToKey() ([]interface{}, error) {
 
 // 保证同一个 period, keyName ，在一个周期里，SaveToSortSet只会被执行一次
 func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, tsi int64, cl *Candle) {
-	refName := keyName + "|refer"
-	refRes, _ := core.RedisCli.GetSet(refName, 1).Result()
-	core.RedisCli.Expire(refName, extt)
-
 	did := cl.InstId + cl.Period + cl.Data[0].(string)
 	cl.Id = hashString(did)
 	cl.ToStruct(core)
@@ -290,11 +286,12 @@ func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, 
 		Tag:     "sardine.log.candle." + cl.Period,
 		Id:      hashString(did),
 	}
-	// go func() {
 	core.WriteLogChan <- &wg
-	// }()
-	// err = wg.Process(core)
 
+	refName := keyName + "|refer"
+	refRes, _ := core.RedisCli.GetSet(refName, 1).Result()
+	core.RedisCli.Expire(refName, extt)
+	// 为保证唯一性机制，防止SaveToSortSet 被重复执行
 	if len(refRes) != 0 {
 		fmt.Println("refName exist: ", refName)
 		return
