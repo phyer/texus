@@ -290,9 +290,9 @@ func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, 
 		Tag:     "sardine.log.candle." + cl.Period,
 		// Id:      hashString(did),
 	}
-	go func() {
-		core.WriteLogChan <- &wg
-	}()
+	// go func() {
+	core.WriteLogChan <- &wg
+	// }()
 	// err = wg.Process(core)
 	if err != nil {
 		fmt.Println("writeLog err:", err)
