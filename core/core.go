@@ -90,6 +90,7 @@ func WriteLogProcess(cr *Core) {
 			fmt.Println("start writelog: " + wg.Tag + " " + wg.Id)
 			wg.Process(cr)
 		}(wg)
+		time.Sleep(50 * time.Millisecond)
 	}
 }
 
