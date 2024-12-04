@@ -286,7 +286,7 @@ func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, 
 	}
 
 	did := cl.InstId + cl.Period + cl.Data[0].(string)
-	cl.Id = did
+	cl.Id = hashString(did)
 	cl.ToStruct(core)
 	cd, _ := json.Marshal(cl)
 	wg := WriteLog{
