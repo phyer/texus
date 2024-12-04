@@ -249,7 +249,7 @@ func (cl *Candle) SetToKey(core *Core) ([]interface{}, error) {
 	}
 	redisCli := core.RedisCli
 	// tm := time.UnixMilli(tsi).Format("2006-01-02 15:04")
-	// fmt.Println("setToKey:", keyName, "ts: ", tm, "price: ", curPrice, "from:", cl.From)
+	fmt.Println("setToKey:", keyName, "ts: ", "price: ", curPrice, "from:", cl.From)
 	redisCli.Set(keyName, dt, extt).Result()
 	core.SaveUniKey(cl.Period, keyName, extt, tsi, cl)
 	return cl.Data, err
