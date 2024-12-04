@@ -74,6 +74,12 @@ func RestTicker(cr *core.Core, dura time.Duration) {
 		}
 		for _, v := range allTicker {
 			if v == ti.InstId {
+				wg := core.WriteLog{
+					Content: ab,
+					Tag:     "sardine.log.ticker." + tir.InstId,
+					Id:      ti.Id,
+				}
+				cr.WriteLogChan <- &wg
 				redisCli.Publish(core.TICKERINFO_PUBLISH+suffix, string(ab)).Result()
 			}
 		}

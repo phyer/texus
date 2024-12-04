@@ -174,7 +174,7 @@ func Daoxu(arr []interface{}) {
 		arr[length-1-i] = temp
 	}
 }
-func hashString(input string) string {
+func HashString(input string) string {
 	// 计算SHA-256哈希值
 	hash := sha256.Sum256([]byte(input))
 	// 转换为十六进制字符串
@@ -278,13 +278,13 @@ func (mx *MaX) SetToKey() ([]interface{}, error) {
 // 保证同一个 period, keyName ，在一个周期里，SaveToSortSet只会被执行一次
 func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, tsi int64, cl *Candle) {
 	did := cl.InstId + cl.Period + cl.Data[0].(string)
-	cl.Id = hashString(did)
+	cl.Id = HashString(did)
 	cl.ToStruct(core)
 	cd, _ := json.Marshal(cl)
 	wg := WriteLog{
 		Content: cd,
 		Tag:     "sardine.log.candle." + cl.Period,
-		Id:      hashString(did),
+		Id:      cl.Id,
 	}
 	core.WriteLogChan <- &wg
 

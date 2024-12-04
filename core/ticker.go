@@ -7,6 +7,7 @@ import (
 )
 
 type TickerInfo struct {
+	Id        string  `json:"_id"`
 	InstId    string  `json:"instId"`
 	Last      float64 `json:"last"`
 	InstType  string  `json:"instType"`
@@ -24,6 +25,7 @@ type TickerInfoResp struct {
 
 func (tir *TickerInfoResp) Convert() TickerInfo {
 	ti := TickerInfo{
+		Id:        HashString(tir.InstId + tir.Ts),
 		InstId:    tir.InstId,
 		InstType:  tir.InstType,
 		Last:      ToFloat64(tir.Last),
