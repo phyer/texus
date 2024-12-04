@@ -185,53 +185,53 @@ func HashString(input string) string {
 	return hashHex[:23]
 }
 
-func (cl *Candle) ToStruct(core *Core) error {
+func (cl *Candle) ToStruct(core *Core) (*Candle, error) {
 	// cl.Timestamp
+	ncd := Candle{}
 
 	// 将字符串转换为 int64 类型的时间戳
 	ts, err := strconv.ParseInt(cl.Data[0].(string), 10, 64)
 	if err != nil {
 		fmt.Println("Error parsing timestamp:", err)
-		return err
+		return nil, err
 	}
-	cl.Timestamp = time.Unix(ts/1000, (ts%1000)*1000000) // 纳秒级别
+	ncd.Timestamp = time.Unix(ts/1000, (ts%1000)*1000000) // 纳秒级别
 	op, err := strconv.ParseFloat(cl.Data[1].(string), 64)
 	if err != nil {
 		fmt.Println("Error parsing string to float64:", err)
-		return err
+		return nil, err
 	}
-	cl.Open = op
+	ncd.Open = op
 	hi, err := strconv.ParseFloat(cl.Data[2].(string), 64)
 	if err != nil {
 		fmt.Println("Error parsing string to float64:", err)
-		return err
+		return nil, err
 	}
-	cl.High = hi
+	ncd.High = hi
 	lo, err := strconv.ParseFloat(cl.Data[3].(string), 64)
 	if err != nil {
 		fmt.Println("Error parsing string to float64:", err)
-		return err
+		return nil, err
 	}
-	cl.Low = lo
+	ncd.Low = lo
 	clse, err := strconv.ParseFloat(cl.Data[4].(string), 64)
 
 	if err != nil {
 		fmt.Println("Error parsing string to float64:", err)
-		return err
+		return nil, err
 	}
-	cl.Close = clse
-	cl.VolCcy, err = strconv.ParseFloat(cl.Data[6].(string), 64)
+	ncd.Close = clse
+	ncd.VolCcy, err = strconv.ParseFloat(cl.Data[6].(string), 64)
 	if err != nil {
 		fmt.Println("Error parsing string to float64:", err)
-		return err
+		return nil, err
 	}
 	if cl.Data[6].(string) == "1" {
-		cl.Confirm = true
+		ncd.Confirm = true
 	} else {
-		cl.Confirm = false
+		ncd.Confirm = false
 	}
-	cl.Data = nil
-	return nil
+	return &ncd, nil
 }
 
 func (mx *MaX) SetToKey() ([]interface{}, error) {
@@ -258,8 +258,8 @@ func (mx *MaX) SetToKey() ([]interface{}, error) {
 func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, tsi int64, cl *Candle) {
 	did := cl.InstId + cl.Period + cl.Data[0].(string)
 	cl.Id = HashString(did)
-	cl.ToStruct(core)
-	cd, _ := json.Marshal(cl)
+	ncd, _ := cl.ToStruct(core)
+	cd, _ := json.Marshal(ncd)
 	wg := WriteLog{
 		Content: cd,
 		Tag:     "sardine.log.candle." + cl.Period,
