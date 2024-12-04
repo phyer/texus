@@ -20,7 +20,6 @@ import (
 
 type Candle struct {
 	core      *Core
-	Id        string `json:"_id"`
 	InstId    string
 	Period    string
 	Data      []interface{}
