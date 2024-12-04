@@ -19,6 +19,7 @@ import (
 )
 
 type Candle struct {
+	Id        string `json:"_id"`
 	core      *Core
 	InstId    string
 	Period    string
@@ -284,8 +285,8 @@ func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, 
 		return
 	}
 
-	// did := cl.InstId + cl.Period + cl.Data[0].(string)
-	// cl.Id = did
+	did := cl.InstId + cl.Period + cl.Data[0].(string)
+	cl.Id = did
 	cl.ToStruct(core)
 	cd, _ := json.Marshal(cl)
 	wg := WriteLog{
