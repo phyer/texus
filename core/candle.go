@@ -185,53 +185,57 @@ func HashString(input string) string {
 	return hashHex[:23]
 }
 
-func (cl *Candle) ToStruct(core *Core) (Candle, error) {
+func (cl *Candle) ToStruct(core *Core) (*Candle, error) {
 	// cl.Timestamp
 	ncd := Candle{}
+	ncd.Id = cl.Id
+	ncd.Period = cl.Period
+	ncd.InstId = cl.InstId
+	ncd.From = cl.From
 
 	// 将字符串转换为 int64 类型的时间戳
 	ts, err := strconv.ParseInt(cl.Data[0].(string), 10, 64)
 	if err != nil {
 		fmt.Println("Error parsing timestamp:", err)
-		return ncd, err
+		return nil, err
 	}
 	ncd.Timestamp = time.Unix(ts/1000, (ts%1000)*1000000) // 纳秒级别
 	op, err := strconv.ParseFloat(cl.Data[1].(string), 64)
 	if err != nil {
 		fmt.Println("Error parsing string to float64:", err)
-		return ncd, err
+		return nil, err
 	}
 	ncd.Open = op
 	hi, err := strconv.ParseFloat(cl.Data[2].(string), 64)
 	if err != nil {
 		fmt.Println("Error parsing string to float64:", err)
-		return ncd, err
+		return nil, err
 	}
 	ncd.High = hi
 	lo, err := strconv.ParseFloat(cl.Data[3].(string), 64)
 	if err != nil {
 		fmt.Println("Error parsing string to float64:", err)
-		return ncd, err
+		return nil, err
 	}
 	ncd.Low = lo
 	clse, err := strconv.ParseFloat(cl.Data[4].(string), 64)
 
 	if err != nil {
 		fmt.Println("Error parsing string to float64:", err)
-		return ncd, err
+		return nil, err
 	}
 	ncd.Close = clse
 	ncd.VolCcy, err = strconv.ParseFloat(cl.Data[6].(string), 64)
 	if err != nil {
 		fmt.Println("Error parsing string to float64:", err)
-		return ncd, err
+		return nil, err
 	}
 	if cl.Data[6].(string) == "1" {
 		ncd.Confirm = true
 	} else {
 		ncd.Confirm = false
 	}
-	return ncd, nil
+	return &ncd, nil
 }
 
 func (mx *MaX) SetToKey() ([]interface{}, error) {
