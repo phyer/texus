@@ -1,4 +1,4 @@
-module phyer.click/tunas
+module phyer.click/texus
 
 replace (
 	v5sdk_go/config => ./submodules/okex/config
