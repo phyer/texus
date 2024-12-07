@@ -1,7 +1,7 @@
 package private
 
 import (
-	"phyer.click/tunas/utils"
+	"github.com/phyer/texus/utils"
 )
 
 type OrderResp struct {

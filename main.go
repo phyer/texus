@@ -13,9 +13,9 @@ import (
 
 	simple "github.com/bitly/go-simplejson"
 	// "github.com/go-redis/redis"
-	"phyer.click/tunas/core"
-	//	"phyer.click/tunas/private"
-	"phyer.click/tunas/utils"
+	"github.com/phyer/texus/core"
+	//	"github.com/phyer/texus/private"
+	"github.com/phyer/texus/utils"
 )
 
 func init() {
@@ -77,7 +77,7 @@ func RestTicker(cr *core.Core, dura time.Duration) {
 				wg := core.WriteLog{
 					Content: ab,
 					Tag:     "sardine.log.ticker." + tir.InstId,
-					Id:      ti.Id,
+					Id:      did,
 				}
 				cr.WriteLogChan <- &wg
 				redisCli.Publish(core.TICKERINFO_PUBLISH+suffix, string(ab)).Result()

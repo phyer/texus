@@ -19,8 +19,8 @@ import (
 
 	simple "github.com/bitly/go-simplejson"
 	"github.com/go-redis/redis"
-	"phyer.click/tunas/private"
-	"phyer.click/tunas/utils"
+	"github.com/phyer/texus/private"
+	"github.com/phyer/texus/utils"
 )
 
 type Core struct {

@@ -1,7 +1,7 @@
 package models
 
 import (
-	"phyer.click/tunas/utils"
+	"github.com/phyer/texus/utils"
 )
 
 type GlobalCoin struct {

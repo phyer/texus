@@ -15,7 +15,7 @@ import (
 
 	simple "github.com/bitly/go-simplejson"
 	"github.com/go-redis/redis"
-	"phyer.click/tunas/utils"
+	"github.com/phyer/texus/utils"
 )
 
 type Candle struct {
