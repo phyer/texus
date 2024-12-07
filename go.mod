@@ -1,4 +1,4 @@
-module phyer.click/texus
+module github.com/phyer/texus
 
 replace (
 	v5sdk_go/config => ./submodules/okex/config
