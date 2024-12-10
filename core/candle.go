@@ -1,13 +1,13 @@
 package core
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
-	// "os"
-	"crypto/sha256"
-	"encoding/hex"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -164,7 +164,11 @@ func (core *Core) SaveCandle(instId string, period string, rsp *CandleData, dura
 			Data:   v,
 			From:   "rest",
 		}
-		candle.SetToKey(core)
+		//保存rest得到的candle
+		saveCandle := os.Getenv("TEXUS_SAVECANDLE")
+		if saveCandle == "true" {
+			candle.SetToKey(core)
+		}
 		// 发布到allCandles|publish, 给外部订阅者用于setToKey
 		arys := []string{ALLCANDLES_PUBLISH}
 		if withWs {
