@@ -86,6 +86,18 @@ func RestTicker(cr *core.Core, dura time.Duration) {
 	}
 }
 
+func LoopRestTicker(cr *core.Core) {
+	per1 := 1 * time.Minute
+	RestTicker(cr, per1)
+	limiter := time.Tick(per1)
+	for {
+		<-limiter
+		go func() {
+			RestTicker(cr, per1)
+		}()
+	}
+}
+
 // 统一受理发起rest请求的请求
 func LoopSaveCandle(cr *core.Core) {
 	for {
@@ -185,15 +197,8 @@ func main() {
 	cr.ShowSysTime()
 	// 从rest接口获取的ticker记录种的交量计入排行榜，指定周期刷新一次
 	go func() {
-		per1 := 1 * time.Minute
-		RestTicker(&cr, per1)
-		limiter := time.Tick(per1)
-		for {
-			<-limiter
-			go func() {
-				RestTicker(&cr, per1)
-			}()
-		}
+		fmt.Println("LoopRestTicker")
+		LoopRestTicker(&cr)
 	}()
 	// 全员15m candle
 	go func() {
