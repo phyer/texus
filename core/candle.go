@@ -156,6 +156,7 @@ func IsModOf(curInt int64, duration time.Duration) bool {
 }
 
 func (core *Core) SaveCandle(instId string, period string, rsp *CandleData, dura time.Duration, withWs bool) {
+	leng := len(rsp.Data)
 	for _, v := range rsp.Data {
 		candle := Candle{
 			InstId: instId,
@@ -164,6 +165,13 @@ func (core *Core) SaveCandle(instId string, period string, rsp *CandleData, dura
 			From:   "rest",
 		}
 		candle.SetToKey(core)
+		// 发布到allCandles|publish, 给外部订阅者用于setToKey
+		arys := []string{ALLCANDLES_PUBLISH}
+		if withWs {
+			arys = append(arys, ALLCANDLES_INNER_PUBLISH)
+		}
+		core.AddToGeneralCandleChnl(&candle, arys)
+		time.Sleep(dura / time.Duration(leng))
 	}
 }
 

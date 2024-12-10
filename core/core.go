@@ -513,3 +513,20 @@ func (cr *Core) RestPostWrapper(url string, param map[string]interface{}) (rest.
 	cr.RedisCli.Publish(ORDER_RESP_PUBLISH+suffix, string(bj))
 	return res.V5Response, nil
 }
+
+func (cr *Core) AddToGeneralCandleChnl(candle *Candle, channels []string) {
+	redisCli := cr.RedisCli
+	ab, _ := json.Marshal(candle)
+	for _, v := range channels {
+		suffix := ""
+		env := os.Getenv("GO_ENV")
+		if env == "demoEnv" {
+			suffix = "-demoEnv"
+		}
+		vd := v + suffix
+		_, err := redisCli.Publish(vd, string(ab)).Result()
+		if err != nil {
+			fmt.Println("err of ma7|ma30 add to redis2:", err, candle.From)
+		}
+	}
+}
