@@ -164,19 +164,36 @@ func (core *Core) SaveCandle(instId string, period string, rsp *CandleData, dura
 			Data:   v,
 			From:   "rest",
 		}
+		candle.PushToWriteLogChan(core)
 		//保存rest得到的candle
 		saveCandle := os.Getenv("TEXUS_SAVECANDLE")
-		if saveCandle == "true" {
-			candle.SetToKey(core)
-		}
 		// 发布到allCandles|publish, 给外部订阅者用于setToKey
 		arys := []string{ALLCANDLES_PUBLISH}
 		if withWs {
 			arys = append(arys, ALLCANDLES_INNER_PUBLISH)
 		}
-		core.AddToGeneralCandleChnl(&candle, arys)
-		time.Sleep(dura / time.Duration(leng))
+		// 如果candle都不需要存到redis，那么AddToGeneralCandleChnl也没有意义
+		if saveCandle == "true" {
+			candle.SetToKey(core)
+			core.AddToGeneralCandleChnl(&candle, arys)
+			time.Sleep(dura / time.Duration(leng))
+		}
 	}
+}
+
+func (candle *Candle) PushToWriteLogChan(cr *Core) error {
+	did := candle.InstId + candle.Period + candle.Data[0].(string)
+	candle.Id = HashString(did)
+	ncd, _ := candle.ToStruct(cr)
+	fmt.Println("ncd: ", ncd)
+	cd, _ := json.Marshal(ncd)
+	wg := WriteLog{
+		Content: cd,
+		Tag:     "sardine.log.candle." + candle.Period,
+		Id:      candle.Id,
+	}
+	cr.WriteLogChan <- &wg
+	return nil
 }
 
 func Daoxu(arr []interface{}) {
@@ -272,17 +289,6 @@ func (mx *MaX) SetToKey() ([]interface{}, error) {
 
 // 保证同一个 period, keyName ，在一个周期里，SaveToSortSet只会被执行一次
 func (core *Core) SaveUniKey(period string, keyName string, extt time.Duration, tsi int64, cl *Candle) {
-	did := cl.InstId + cl.Period + cl.Data[0].(string)
-	cl.Id = HashString(did)
-	ncd, _ := cl.ToStruct(core)
-	fmt.Println("ncd: ", ncd)
-	cd, _ := json.Marshal(ncd)
-	wg := WriteLog{
-		Content: cd,
-		Tag:     "sardine.log.candle." + cl.Period,
-		Id:      cl.Id,
-	}
-	core.WriteLogChan <- &wg
 
 	refName := keyName + "|refer"
 	refRes, _ := core.RedisCli.GetSet(refName, 1).Result()
