@@ -164,15 +164,16 @@ func (core *Core) SaveCandle(instId string, period string, rsp *CandleData, dura
 			Data:   v,
 			From:   "rest",
 		}
+		//存到elasticSearch
 		candle.PushToWriteLogChan(core)
 		//保存rest得到的candle
-		saveCandle := os.Getenv("TEXUS_SAVECANDLE")
 		// 发布到allCandles|publish, 给外部订阅者用于setToKey
 		arys := []string{ALLCANDLES_PUBLISH}
 		if withWs {
 			arys = append(arys, ALLCANDLES_INNER_PUBLISH)
 		}
 		// 如果candle都不需要存到redis，那么AddToGeneralCandleChnl也没有意义
+		saveCandle := os.Getenv("TEXUS_SAVECANDLE")
 		if saveCandle == "true" {
 			candle.SetToKey(core)
 			core.AddToGeneralCandleChnl(&candle, arys)
