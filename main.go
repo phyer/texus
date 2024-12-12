@@ -13,7 +13,7 @@ import (
 
 	simple "github.com/bitly/go-simplejson"
 	// "github.com/go-redis/redis"
-	"github.com/phyer/texus/core"
+	"github.com/phyer/core"
 	//	"github.com/phyer/texus/private"
 	"github.com/phyer/texus/utils"
 )
