@@ -1,13 +1,14 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/phyer/v5sdkgo/rest"
 	"math/rand"
 	"os"
 	"strings"
 	"time"
-	"v5sdk_go/rest"
 	// "v5sdk_go/ws"
 	// "v5sdk_go/ws/wImpl"
 
@@ -28,7 +29,7 @@ func RestTicker(cr *core.Core, dura time.Duration) {
 	js := simple.Json{}
 	itemList := []interface{}{}
 	fmt.Println("getAllTickerInfo err: ")
-	rsp1, err := cr.GetAllTickerInfo()
+	rsp1, err := GetAllTickerInfo(cr)
 	rsp = *rsp1
 	js1, err := simple.NewJson([]byte(rsp.Body))
 	js = *js1
@@ -44,7 +45,7 @@ func RestTicker(cr *core.Core, dura time.Duration) {
 	fmt.Println("itemList length:", len(itemList))
 	// 关注多少个币，在这里设置, 只需要5个币
 	allTicker := cr.GetScoreList(5)
-	redisCli := cr.RedisCli
+	redisCli := cr.RedisLocalCli
 	// 全部币种列表，跟特定币种列表进行比对，匹配后push到redis
 	for _, v := range itemList {
 		tir := core.TickerInfoResp{}
@@ -101,7 +102,7 @@ func LoopRestTicker(cr *core.Core) {
 // 统一受理发起rest请求的请求
 func LoopSaveCandle(cr *core.Core) {
 	for {
-		ary, err := cr.RedisCli.BRPop(0, "restQueue").Result()
+		ary, err := cr.RedisLocalCli.BRPop(0, "restQueue").Result()
 		if err != nil {
 			fmt.Println("brpop err:", err)
 			continue
@@ -125,6 +126,35 @@ func LoopSaveCandle(cr *core.Core) {
 			restQ.Save(cr)
 		}()
 	}
+}
+
+func GetAllTickerInfo(cr *core.Core) (*rest.RESTAPIResult, error) {
+	rsp, err := RestInvoke(cr, "/api/v5/market/tickers?instType=SPOT", rest.GET)
+	return rsp, err
+}
+
+func RestInvoke(cr *core.Core, subUrl string, method string) (*rest.RESTAPIResult, error) {
+	restUrl, _ := cr.Cfg.Config.Get("connect").Get("restBaseUrl").String()
+	//ep, method, uri string, param *map[string]interface{}
+	rest := rest.NewRESTAPI(restUrl, method, subUrl, nil)
+	key, _ := cr.Cfg.Config.Get("credentialReadOnly").Get("okAccessKey").String()
+	secure, _ := cr.Cfg.Config.Get("credentialReadOnly").Get("secretKey").String()
+	pass, _ := cr.Cfg.Config.Get("credentialReadOnly").Get("okAccessPassphrase").String()
+	isDemo := false
+	if cr.Env == "demoEnv" {
+		isDemo = true
+	}
+	rest.SetSimulate(isDemo).SetAPIKey(key, secure, pass)
+	response, err := rest.Run(context.Background())
+	if err != nil {
+		fmt.Println("restInvoke1 err:", subUrl, err)
+	}
+	return response, err
+}
+
+func ShowSysTime(cr *core.Core) {
+	rsp, _ := RestInvoke(cr, "/api/v5/public/time", rest.GET)
+	fmt.Println("serverSystem time:", rsp)
 }
 
 // period: 每个循环开始的时间点，单位：秒
@@ -171,7 +201,7 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 			nw := time.Now()
 			rand.Seed(nw.UnixNano())
 			ct := rand.Intn(rge)
-			minutes := cr.PeriodToMinutes(barPeriod)
+			minutes, _ := cr.PeriodToMinutes(barPeriod)
 			tmi := nw.UnixMilli()
 			tmi = tmi - tmi%60000
 			tmi = tmi - (int64(ct) * minutes * 60000)
@@ -185,7 +215,7 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 			}
 			js, err := json.Marshal(restQ)
 			fmt.Println("allCoins lpush js:", string(js))
-			cr.RedisCli.LPush("restQueue", js)
+			cr.RedisLocalCli.LPush("restQueue", js)
 			return err
 		})
 	}
@@ -194,7 +224,7 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 func main() {
 	cr := core.Core{}
 	cr.Init()
-	cr.ShowSysTime()
+	ShowSysTime(&cr)
 	// 从rest接口获取的ticker记录种的交量计入排行榜，指定周期刷新一次
 	go func() {
 		fmt.Println("LoopRestTicker")
