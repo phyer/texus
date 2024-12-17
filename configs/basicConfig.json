@@ -50,7 +50,16 @@
 			"wsPrivateBaseUrl": "wsaws.okx.com:8443/ws/v5/private",
 			"wsPublicBaseUrl": "wsaws.okx.com:8443/ws/v5/public",
 			"restBaseUrl": "https://aws.okx.com"
-		}
+		},
+		"focusList": [
+      "ETH-USDT",
+      "BTC-USDT",
+      "OKB-USDT",
+      "DOGE-USDT",
+      "SOL-USDT",
+      "XRP-USDT",
+      "DYDX-USDT"
+    ],
   },
 	"production": {
 		"redis": {
