@@ -59,7 +59,7 @@
       "SOL-USDT",
       "XRP-USDT",
       "DYDX-USDT"
-    ],
+    ]
   },
 	"production": {
 		"redis": {
