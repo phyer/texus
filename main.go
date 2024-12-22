@@ -230,6 +230,11 @@ func main() {
 		fmt.Println("LoopRestTicker")
 		LoopRestTicker(&cr)
 	}()
+	// 全员5m
+	go func() {
+		fmt.Println("LoopAllCoinsList1")
+		LoopAllCoinsList(240, 0, 240, "5m", 5, 6)
+	}()
 	// 全员15m candle
 	go func() {
 		fmt.Println("LoopAllCoinsList2")
