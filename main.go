@@ -233,7 +233,7 @@ func main() {
 	// 全员5m
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(240, 0, 240, "5m", 5, 6)
+		LoopAllCoinsList(120, 0, 120, "5m", 6, 9)
 	}()
 	// 全员15m candle
 	go func() {
