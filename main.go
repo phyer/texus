@@ -44,7 +44,7 @@ func RestTicker(cr *core.Core, dura time.Duration) {
 	itemList = js.Get("data").MustArray()
 	fmt.Println("itemList length:", len(itemList))
 	// 关注多少个币，在这里设置, 只需要5个币
-	allTicker := cr.GetScoreList(5)
+	allTicker := cr.GetScoreList(-1)
 	redisCli := cr.RedisLocalCli
 	// 全部币种列表，跟特定币种列表进行比对，匹配后push到redis
 	for _, v := range itemList {
@@ -183,7 +183,7 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 			case <-ticker.C:
 				go func() {
 					// -1 是获取全部coin列表
-					list := cr.GetScoreList(5)
+					list := cr.GetScoreList(-1)
 					fmt.Println("allCoins3", list)
 					allScoreChan <- list
 				}()
@@ -233,57 +233,57 @@ func main() {
 	// 全员5m
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(120, 0, 120, "5m", 6, 9)
+		LoopAllCoinsList(60, 0, 60, "5m", 6, 18)
 	}()
 	// 全员15m candle
 	go func() {
 		fmt.Println("LoopAllCoinsList2")
-		LoopAllCoinsList(380, 90, 380, "15m", 4, 7)
+		LoopAllCoinsList(190, 90, 190, "15m", 4, 14)
 	}()
 	// 全员30m candle
 	go func() {
 		fmt.Println("LoopAllCoinsList2")
-		LoopAllCoinsList(510, 90, 500, "30m", 5, 8)
+		LoopAllCoinsList(255, 90, 255, "30m", 5, 16)
 	}()
 	// 全员1H candle
 	go func() {
 		fmt.Println("LoopAllCoinsList2")
-		LoopAllCoinsList(770, 0, 760, "1H", 9, 12)
+		LoopAllCoinsList(385, 0, 380, "1H", 9, 24)
 	}()
 	// 全员2H candle
 	go func() {
 		fmt.Println("LoopAllCoinsList2")
-		LoopAllCoinsList(820, 0, 820, "2H", 12, 15)
+		LoopAllCoinsList(410, 0, 410, "2H", 12, 30)
 	}()
 	// 全员4小时candle
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(1280, 150, 1280, "4H", 15, 19)
+		LoopAllCoinsList(690, 150, 690, "4H", 15, 38)
 	}()
 	// 全员6小时candle
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(1440, 180, 1440, "6H", 17, 21)
+		LoopAllCoinsList(720, 180, 720, "6H", 17, 42)
 	}()
 	// 全员12小时candle
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(1680, 180, 1680, "12H", 19, 23)
+		LoopAllCoinsList(890, 180, 885, "12H", 19, 46)
 	}()
 	// 全员1Day candle & maX
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(1920, 4, 1920, "1D", 25, 30)
+		LoopAllCoinsList(940, 4, 940, "1D", 25, 60)
 	}()
 	// 全员2Day candle & maX
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(3840, 220, 3840, "2D", 26, 31)
+		LoopAllCoinsList(1920, 220, 1920, "2D", 26, 67)
 	}()
 	// 全员5Day candle & maX
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(6400, 4, 6400, "5D", 28, 35)
+		LoopAllCoinsList(3200, 4, 3200, "5D", 28, 70)
 	}()
 	go func() {
 		LoopSaveCandle(&cr)

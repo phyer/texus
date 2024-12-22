@@ -19,6 +19,7 @@ func GetFuncName() string {
 	return f.Name()
 }
 
+// 定时器，每隔mdura这么长时间，轮询一个周期，每个周期内分成 len(ary) 个时间分片，每个分片用来执行一个pr程序, pr会得到当前分片的id和ary本身作为入参
 func TickerWrapper(mdura time.Duration, ary []string, pr PushRestQ) {
 	done := make(chan bool)
 	idx := 0
