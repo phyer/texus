@@ -60,7 +60,7 @@ func RestTicker(cr *core.Core, dura time.Duration) {
 			return
 		}
 		ti := tir.Convert()
-		isUsdt := strings.Contains(ti.InstId, "-USDT")
+		isUsdt := strings.Contains(ti.InstID, "-USDT")
 		if !isUsdt {
 			continue
 		}
@@ -74,10 +74,10 @@ func RestTicker(cr *core.Core, dura time.Duration) {
 			suffix = "-demoEnv"
 		}
 		for _, v := range allTicker {
-			if v == ti.InstId {
+			if v == ti.InstID {
 				wg := core.WriteLog{
 					Content: ab,
-					Tag:     "sardine.log.ticker." + tir.InstId,
+					Tag:     "sardine.log.ticker." + tir.InstID,
 					Id:      ti.Id,
 				}
 				cr.WriteLogChan <- &wg
