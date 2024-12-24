@@ -233,57 +233,57 @@ func main() {
 	// 全员5m
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(60, 0, 60, "5m", 6, 18)
+		LoopAllCoinsList(6, 0, 6, "5m", 6, 18)
 	}()
 	// 全员15m candle
 	go func() {
 		fmt.Println("LoopAllCoinsList2")
-		LoopAllCoinsList(190, 90, 190, "15m", 4, 14)
+		LoopAllCoinsList(19, 90, 19, "15m", 4, 14)
 	}()
 	// 全员30m candle
 	go func() {
 		fmt.Println("LoopAllCoinsList2")
-		LoopAllCoinsList(255, 90, 255, "30m", 5, 16)
+		LoopAllCoinsList(25, 90, 25, "30m", 5, 16)
 	}()
 	// 全员1H candle
 	go func() {
 		fmt.Println("LoopAllCoinsList2")
-		LoopAllCoinsList(385, 0, 380, "1H", 9, 24)
+		LoopAllCoinsList(38, 0, 38, "1H", 9, 24)
 	}()
 	// 全员2H candle
 	go func() {
 		fmt.Println("LoopAllCoinsList2")
-		LoopAllCoinsList(410, 0, 410, "2H", 12, 30)
+		LoopAllCoinsList(41, 0, 41, "2H", 12, 30)
 	}()
 	// 全员4小时candle
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(690, 150, 690, "4H", 15, 38)
+		LoopAllCoinsList(69, 150, 69, "4H", 15, 38)
 	}()
 	// 全员6小时candle
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(720, 180, 720, "6H", 17, 42)
+		LoopAllCoinsList(72, 180, 72, "6H", 17, 42)
 	}()
 	// 全员12小时candle
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(890, 180, 885, "12H", 19, 46)
+		LoopAllCoinsList(89, 180, 88, "12H", 19, 46)
 	}()
 	// 全员1Day candle & maX
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(940, 4, 940, "1D", 25, 60)
+		LoopAllCoinsList(94, 4, 94, "1D", 25, 60)
 	}()
 	// 全员2Day candle & maX
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(1920, 220, 1920, "2D", 26, 67)
+		LoopAllCoinsList(192, 220, 192, "2D", 26, 67)
 	}()
 	// 全员5Day candle & maX
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(3200, 4, 3200, "5D", 28, 70)
+		LoopAllCoinsList(320, 4, 320, "5D", 28, 70)
 	}()
 	go func() {
 		LoopSaveCandle(&cr)
