@@ -278,7 +278,7 @@ func main() {
 	// 全员2Day candle & maX
 	go func() {
 		fmt.Println("LoopAllCoinsList1")
-		LoopAllCoinsList(192, 220, 192, "2D", 26, 67)
+		LoopAllCoinsList(192, 4, 192, "2D", 26, 67)
 	}()
 	// 全员5Day candle & maX
 	go func() {
