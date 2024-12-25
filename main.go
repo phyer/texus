@@ -7,6 +7,7 @@ import (
 	"github.com/phyer/v5sdkgo/rest"
 	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 	// "v5sdk_go/ws"
@@ -205,8 +206,11 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 			tmi := nw.UnixMilli()
 			tmi = tmi - tmi%60000
 			tmi = tmi - (int64(ct) * minutes * 60000)
-			lm := core.ToString(core.ToInt64(onceCount))
+			lm := strconv.Itoa(onceCount)
 			fmt.Println("instId: ", ary[i], " limit: ", lm, " onceCount:", onceCount)
+			if lm == "0" {
+				lm = "100"
+			}
 			restQ := core.RestQueue{
 				InstId: ary[i],
 				Bar:    barPeriod,
