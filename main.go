@@ -3,13 +3,16 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"github.com/phyer/v5sdkgo/rest"
+	// "fmt"
 	"math/rand"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/phyer/v5sdkgo/rest"
+	"github.com/sirupsen/logrus"
+
 	// "v5sdk_go/ws"
 	// "v5sdk_go/ws/wImpl"
 
@@ -29,21 +32,21 @@ func RestTicker(cr *core.Core, dura time.Duration) {
 	rsp := rest.RESTAPIResult{}
 	js := simple.Json{}
 	itemList := []interface{}{}
-	fmt.Println("getAllTickerInfo err: ")
+	// logrus.Info("getAllTickerInfo err: ")
 	rsp1, err := GetAllTickerInfo(cr)
 	rsp = *rsp1
 	js1, err := simple.NewJson([]byte(rsp.Body))
 	js = *js1
 	if err != nil {
-		fmt.Println("restTicker err: ", err)
+		logrus.Error("restTicker err: ", err)
 		return
 	}
 	if len(rsp.Body) == 0 {
-		fmt.Println("rsp body is null")
+		logrus.Error("rsp body is null")
 		return
 	}
 	itemList = js.Get("data").MustArray()
-	fmt.Println("itemList length:", len(itemList))
+	// logrus.Info("itemList length:", len(itemList))
 	// 关注多少个币，在这里设置, 只需要5个币
 	allTicker := cr.GetScoreList(-1)
 	redisCli := cr.RedisLocalCli
@@ -52,12 +55,12 @@ func RestTicker(cr *core.Core, dura time.Duration) {
 		tir := core.TickerInfoResp{}
 		bs, err := json.Marshal(v)
 		if err != nil {
-			fmt.Println("restTicker marshal err: ", err)
+			logrus.Error("restTicker marshal err: ", err)
 			return
 		}
 		err = json.Unmarshal(bs, &tir)
 		if err != nil {
-			fmt.Println("restTicker unmarshal err: ", err)
+			logrus.Error("restTicker unmarshal err: ", err)
 			return
 		}
 		ti := tir.Convert()
@@ -105,12 +108,12 @@ func LoopSaveCandle(cr *core.Core) {
 	for {
 		ary, err := cr.RedisLocalCli.BRPop(0, "restQueue").Result()
 		if err != nil {
-			fmt.Println("brpop err:", err)
+			logrus.Error("brpop err:", err)
 			continue
 		}
 		restQ := core.RestQueue{}
 		json.Unmarshal([]byte(ary[1]), &restQ)
-		fmt.Println("before: ", restQ.InstId)
+		// logrus.Info("before: ", restQ.InstId)
 		// before:  USDT|position|key
 		ary1 := strings.Split(restQ.InstId, "|")
 		if ary1[0] == "USDT" {
@@ -120,7 +123,7 @@ func LoopSaveCandle(cr *core.Core) {
 		if len(ary1) > 1 && ary1[1] == "position" {
 			restQ.InstId = ary1[0] + "-USDT"
 		}
-		fmt.Println("after: ", restQ.InstId)
+		// logrus.Info("after: ", restQ.InstId)
 		// after:  restQueue-USDT
 		go func() {
 			restQ.Show(cr)
@@ -148,14 +151,14 @@ func RestInvoke(cr *core.Core, subUrl string, method string) (*rest.RESTAPIResul
 	rest.SetSimulate(isDemo).SetAPIKey(key, secure, pass)
 	response, err := rest.Run(context.Background())
 	if err != nil {
-		fmt.Println("restInvoke1 err:", subUrl, err)
+		logrus.Error("restInvoke1 err:", subUrl, err)
 	}
 	return response, err
 }
 
 func ShowSysTime(cr *core.Core) {
 	rsp, _ := RestInvoke(cr, "/api/v5/public/time", rest.GET)
-	fmt.Println("serverSystem time:", rsp)
+	logrus.Info("serverSystem time:", rsp)
 }
 
 // period: 每个循环开始的时间点，单位：秒
@@ -169,13 +172,13 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 	cr := core.Core{}
 	cr.Init()
 	allScoreChan := make(chan []string)
-	fmt.Println("start LoopAllCoinsList: period: ", period, " delay: ", delay, " mdura:", mdura, " barPeriod: ", barPeriod, " onceCount: ", onceCount, " rge:", rge)
+	// logrus.Info("start LoopAllCoinsList: period: ", period, " delay: ", delay, " mdura:", mdura, " barPeriod: ", barPeriod, " onceCount: ", onceCount, " rge:", rge)
 	per1 := 1 * time.Minute
 	ticker := time.NewTicker(per1)
 	go func() {
 		for {
 			tsi := time.Now().Unix()
-			//fmt.Println("tsi, period, delay, tsi%(period): ", tsi, period, delay, tsi%(period))
+			//logrus.Info("tsi, period, delay, tsi%(period): ", tsi, period, delay, tsi%(period))
 			if tsi%(period) != delay {
 				time.Sleep(1 * time.Second)
 				continue
@@ -185,7 +188,7 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 				go func() {
 					// -1 是获取全部coin列表
 					list := cr.GetScoreList(-1)
-					fmt.Println("allCoins3", list)
+					// logrus.Info("allCoins3", list)
 					allScoreChan <- list
 				}()
 			}
@@ -193,7 +196,7 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 	}()
 	for {
 		allScore, _ := <-allScoreChan
-		fmt.Println("allCoins allScore", allScore)
+		logrus.Debug("allCoins allScore", allScore)
 		if len(allScore) == 0 {
 			continue
 		}
@@ -207,7 +210,7 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 			tmi = tmi - tmi%60000
 			tmi = tmi - (int64(ct) * minutes * 60000)
 			lm := strconv.Itoa(onceCount)
-			fmt.Println("instId: ", ary[i], " limit: ", lm, " onceCount:", onceCount)
+			// logrus.Info("instId: ", ary[i], " limit: ", lm, " onceCount:", onceCount)
 			if lm == "0" {
 				lm = "100"
 			}
@@ -219,7 +222,7 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 				After:  tmi,
 			}
 			js, err := json.Marshal(restQ)
-			fmt.Println("allCoins lpush js:", string(js))
+			logrus.Debug("allCoins lpush js:", string(js))
 			cr.RedisLocalCli.LPush("restQueue", js)
 			return err
 		})
@@ -232,62 +235,62 @@ func main() {
 	ShowSysTime(&cr)
 	// 从rest接口获取的ticker记录种的交量计入排行榜，指定周期刷新一次
 	go func() {
-		fmt.Println("LoopRestTicker")
+		logrus.Info("LoopRestTicker")
 		LoopRestTicker(&cr)
 	}()
 	// 全员5m
 	go func() {
-		fmt.Println("LoopAllCoinsList1")
+		logrus.Info("LoopAllCoinsList1")
 		LoopAllCoinsList(6, 0, 6, "5m", 6, 52)
 	}()
 	// 全员15m candle
 	go func() {
-		fmt.Println("LoopAllCoinsList2")
+		logrus.Info("LoopAllCoinsList2")
 		LoopAllCoinsList(19, 90, 19, "15m", 10, 56)
 	}()
 	// 全员30m candle
 	go func() {
-		fmt.Println("LoopAllCoinsList2")
+		logrus.Info("LoopAllCoinsList2")
 		LoopAllCoinsList(25, 0, 25, "30m", 15, 59)
 	}()
 	// 全员1H candle
 	go func() {
-		fmt.Println("LoopAllCoinsList2")
+		logrus.Info("LoopAllCoinsList2")
 		LoopAllCoinsList(38, 0, 38, "1H", 15, 67)
 	}()
 	// 全员2H candle
 	go func() {
-		fmt.Println("LoopAllCoinsList2")
+		logrus.Info("LoopAllCoinsList2")
 		LoopAllCoinsList(41, 0, 41, "2H", 20, 78)
 	}()
 	// 全员4小时candle
 	go func() {
-		fmt.Println("LoopAllCoinsList1")
+		logrus.Info("LoopAllCoinsList1")
 		LoopAllCoinsList(69, 0, 69, "4H", 20, 83)
 	}()
 	// 全员6小时candle
 	go func() {
-		fmt.Println("LoopAllCoinsList1")
+		logrus.Info("LoopAllCoinsList1")
 		LoopAllCoinsList(72, 0, 72, "6H", 20, 89)
 	}()
 	// 全员12小时candle
 	go func() {
-		fmt.Println("LoopAllCoinsList1")
+		logrus.Info("LoopAllCoinsList1")
 		LoopAllCoinsList(89, 0, 88, "12H", 25, 97)
 	}()
 	// 全员1Day candle & maX
 	go func() {
-		fmt.Println("LoopAllCoinsList1")
+		logrus.Info("LoopAllCoinsList1")
 		LoopAllCoinsList(94, 4, 94, "1D", 25, 107)
 	}()
 	// 全员2Day candle & maX
 	go func() {
-		fmt.Println("LoopAllCoinsList1")
+		logrus.Info("LoopAllCoinsList1")
 		LoopAllCoinsList(192, 4, 192, "2D", 25, 120)
 	}()
 	// 全员5Day candle & maX
 	go func() {
-		fmt.Println("LoopAllCoinsList1")
+		logrus.Info("LoopAllCoinsList1")
 		LoopAllCoinsList(320, 4, 320, "5D", 30, 149)
 	}()
 	go func() {
