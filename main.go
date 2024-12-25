@@ -207,12 +207,11 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 			tmi = tmi - (int64(ct) * minutes * 60000)
 			fmt.Println("instId: ", ary[i])
 			restQ := core.RestQueue{
-				InstId:   ary[i],
-				Bar:      barPeriod,
-				Duration: time.Duration(mdura/len(allScore)) * time.Second,
-				WithWs:   false,
-				Limit:    core.ToString(core.ToInt64(onceCount)),
-				After:    tmi,
+				InstId: ary[i],
+				Bar:    barPeriod,
+				WithWs: false,
+				Limit:  core.ToString(core.ToInt64(onceCount)),
+				After:  tmi,
 			}
 			js, err := json.Marshal(restQ)
 			fmt.Println("allCoins lpush js:", string(js))
