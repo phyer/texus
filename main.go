@@ -206,7 +206,7 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 			tmi = tmi - tmi%60000
 			tmi = tmi - (int64(ct) * minutes * 60000)
 			lm := core.ToString(core.ToInt64(onceCount))
-			fmt.Println("instId: ", ary[i], " limit: ", lm)
+			fmt.Println("instId: ", ary[i], " limit: ", lm, " onceCount:", onceCount)
 			restQ := core.RestQueue{
 				InstId: ary[i],
 				Bar:    barPeriod,
