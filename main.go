@@ -232,7 +232,7 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 func main() {
 	cr := core.Core{}
 	// level := os.Getenv("TEXUS_LOGLEVEL")
-	logrus.SetLevel(logrus.InfoLevel)
+	logrus.SetLevel(logrus.DebugLevel)
 	cr.Init()
 	ShowSysTime(&cr)
 	// 从rest接口获取的ticker记录种的交量计入排行榜，指定周期刷新一次
