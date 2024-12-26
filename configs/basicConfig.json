@@ -34,7 +34,7 @@
 		"redis": {
 			"url": "localhost:6379",
 			"password": "",
-			"index": 4,
+			"index": 0,
       "description": ""
 		},
 		"credentialReadOnly": {
