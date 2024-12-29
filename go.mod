@@ -7,7 +7,6 @@ require (
 	github.com/phyer/core v0.1.90
 	github.com/phyer/v5sdkgo v0.1.4
 	github.com/sirupsen/logrus v1.9.3
-	golang.org/x/sync v0.10.0
 )
 
 require (

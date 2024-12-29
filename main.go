@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-
 	// "fmt"
 	"math/rand"
 	"os"
@@ -14,7 +12,6 @@ import (
 
 	"github.com/phyer/v5sdkgo/rest"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/errgroup"
 
 	// "v5sdk_go/ws"
 	// "v5sdk_go/ws/wImpl"
@@ -172,126 +169,64 @@ func ShowSysTime(cr *core.Core) {
 // range: 随机的范围，从0开始到range个周期，作为查询的after值，也就是随机n个周期，去取之前的记录,对于2D，5D等数据，可以用来补全数据, range值越大，随机散点的范围越大, 越失焦
 
 func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, onceCount int, rge int) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	cr := core.Core{}
 	cr.Init()
-
-	// Increase buffer size to accommodate multiple updates
-	// Buffer size should be large enough to handle typical batch size
-	// but not so large that it consumes too much memory
-	const channelBufferSize = 100
-	allScoreChan := make(chan []string, channelBufferSize)
-
-	// Add channel overflow protection
-	sendWithTimeout := func(scores []string) {
-		select {
-		case allScoreChan <- scores:
-			// Successfully sent
-		case <-time.After(5 * time.Second):
-			logrus.Warn("Failed to send scores to channel - buffer full")
-		case <-ctx.Done():
-			return
-		}
-	}
-
-	mainTicker := time.NewTicker(time.Duration(period) * time.Second)
-	defer mainTicker.Stop()
-
-	var eg errgroup.Group
-
-	// Producer goroutine
-	eg.Go(func() error {
+	allScoreChan := make(chan []string)
+	// logrus.Info("start LoopAllCoinsList: period: ", period, " delay: ", delay, " mdura:", mdura, " barPeriod: ", barPeriod, " onceCount: ", onceCount, " rge:", rge)
+	per1 := 1 * time.Minute
+	ticker := time.NewTicker(per1)
+	go func() {
 		for {
+			tsi := time.Now().Unix()
+			//logrus.Info("tsi, period, delay, tsi%(period): ", tsi, period, delay, tsi%(period))
+			if tsi%(period) != delay {
+				time.Sleep(1 * time.Second)
+				continue
+			}
 			select {
-			case <-ctx.Done():
-				return nil
-			case <-mainTicker.C:
-				if time.Now().Unix()%period != delay {
-					continue
-				}
-
-				_, cancel := context.WithTimeout(ctx, 5*time.Second)
-				list := cr.GetScoreList(-1)
-				cancel()
-
-				// Use the new send function with timeout
-				if len(list) > 0 {
-					sendWithTimeout(list)
-				}
+			case <-ticker.C:
+				go func() {
+					// -1 是获取全部coin列表
+					list := cr.GetScoreList(-1)
+					// logrus.Info("allCoins3", list)
+					allScoreChan <- list
+				}()
 			}
 		}
-	})
+	}()
+	for {
+		allScore, _ := <-allScoreChan
+		logrus.Debug("allCoins allScore", allScore)
+		if len(allScore) == 0 {
+			continue
+		}
 
-	// Consumer goroutine
-	eg.Go(func() error {
-		for {
-			select {
-			case <-ctx.Done():
-				return nil
-			case allScore := <-allScoreChan:
-				if len(allScore) == 0 {
-					continue
-				}
-
-				// Process in batches to avoid overwhelming the system
-				if err := processScores(&cr, allScore, mdura, barPeriod, onceCount, rge); err != nil {
-					logrus.WithError(err).Error("Failed to process scores")
-					// Consider implementing exponential backoff retry here
-				}
+		utils.TickerWrapper(time.Duration(mdura)*time.Second, allScore, func(i int, ary []string) error {
+			nw := time.Now()
+			rand.Seed(nw.UnixNano())
+			ct := rand.Intn(rge)
+			minutes, _ := cr.PeriodToMinutes(barPeriod)
+			tmi := nw.UnixMilli()
+			tmi = tmi - tmi%60000
+			tmi = tmi - (int64(ct) * minutes * 60000)
+			lm := strconv.Itoa(onceCount)
+			// logrus.Info("instId: ", ary[i], " limit: ", lm, " onceCount:", onceCount)
+			if lm == "0" {
+				lm = "100"
 			}
-		}
-	})
-
-	if err := eg.Wait(); err != nil {
-		logrus.WithError(err).Error("LoopAllCoinsList failed")
+			restQ := core.RestQueue{
+				InstId: ary[i],
+				Bar:    barPeriod,
+				WithWs: false,
+				Limit:  lm,
+				After:  tmi,
+			}
+			js, err := json.Marshal(restQ)
+			logrus.Debug("allCoins lpush js:", string(js))
+			cr.RedisLocalCli.LPush("restQueue", js)
+			return err
+		})
 	}
-}
-
-func processScores(cr *core.Core, allScore []string, mdura int, barPeriod string, onceCount int, rge int) error {
-	utils.TickerWrapper(time.Duration(mdura)*time.Second, allScore, func(i int, ary []string) error {
-		nw := time.Now()
-		// 使用更安全的随机数生成
-		randSource := rand.NewSource(nw.UnixNano())
-		randGen := rand.New(randSource)
-		ct := randGen.Intn(rge)
-
-		minutes, err := cr.PeriodToMinutes(barPeriod)
-		if err != nil {
-			return fmt.Errorf("failed to get period minutes: %w", err)
-		}
-
-		tmi := nw.UnixMilli()
-		tmi = tmi - tmi%60000
-		tmi = tmi - (int64(ct) * minutes * 60000)
-
-		limit := onceCount
-		if limit == 0 {
-			limit = 100
-		}
-
-		restQ := core.RestQueue{
-			InstId: ary[i],
-			Bar:    barPeriod,
-			WithWs: false,
-			Limit:  strconv.Itoa(limit),
-			After:  tmi,
-		}
-
-		js, err := json.Marshal(restQ)
-		if err != nil {
-			return fmt.Errorf("failed to marshal RestQueue: %w", err)
-		}
-		logrus.WithFields(logrus.Fields{
-			"instId": ary[i],
-			"bar":    barPeriod,
-			"limit":  limit,
-		}).Debug("Pushing to restQueue")
-
-		return cr.RedisLocalCli.LPush("restQueue", js).Err()
-	})
-	return nil
 }
 
 func main() {
