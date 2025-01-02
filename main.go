@@ -243,57 +243,57 @@ func main() {
 	// 全员5m
 	go func() {
 		logrus.Info("LoopAllCoinsList1")
-		LoopAllCoinsList(6, 0, 120, "5m", 6, 113)
+		LoopAllCoinsList(6, 0, 120, "5m", 3, 113)
 	}()
 	// 全员15m candle
 	go func() {
 		logrus.Info("LoopAllCoinsList2")
-		LoopAllCoinsList(19, 90, 380, "15m", 10, 123)
+		LoopAllCoinsList(19, 90, 380, "15m", 5, 123)
 	}()
 	// 全员30m candle
 	go func() {
 		logrus.Info("LoopAllCoinsList2")
-		LoopAllCoinsList(25, 0, 500, "30m", 15, 117)
+		LoopAllCoinsList(25, 0, 500, "30m", 7, 117)
 	}()
 	// 全员1H candle
 	go func() {
 		logrus.Info("LoopAllCoinsList2")
-		LoopAllCoinsList(38, 0, 760, "1H", 15, 131)
+		LoopAllCoinsList(38, 0, 760, "1H", 7, 131)
 	}()
 	// 全员2H candle
 	go func() {
 		logrus.Info("LoopAllCoinsList2")
-		LoopAllCoinsList(41, 0, 820, "2H", 20, 183)
+		LoopAllCoinsList(41, 0, 820, "2H", 10, 183)
 	}()
 	// 全员4小时candle
 	go func() {
 		logrus.Info("LoopAllCoinsList1")
-		LoopAllCoinsList(69, 0, 1380, "4H", 20, 191)
+		LoopAllCoinsList(69, 0, 1380, "4H", 10, 191)
 	}()
 	// 全员6小时candle
 	go func() {
 		logrus.Info("LoopAllCoinsList1")
-		LoopAllCoinsList(72, 0, 1440, "6H", 20, 203)
+		LoopAllCoinsList(72, 0, 1440, "6H", 10, 203)
 	}()
 	// 全员12小时candle
 	go func() {
 		logrus.Info("LoopAllCoinsList1")
-		LoopAllCoinsList(89, 0, 1760, "12H", 25, 217)
+		LoopAllCoinsList(89, 0, 1760, "12H", 12, 217)
 	}()
 	// 全员1Day candle & maX
 	go func() {
 		logrus.Info("LoopAllCoinsList1")
-		LoopAllCoinsList(94, 4, 1920, "1D", 25, 221)
+		LoopAllCoinsList(94, 4, 1920, "1D", 12, 221)
 	}()
 	// 全员2Day candle & maX
 	go func() {
 		logrus.Info("LoopAllCoinsList1")
-		LoopAllCoinsList(192, 4, 3840, "2D", 25, 243)
+		LoopAllCoinsList(192, 4, 3840, "2D", 12, 243)
 	}()
 	// 全员5Day candle & maX
 	go func() {
 		logrus.Info("LoopAllCoinsList1")
-		LoopAllCoinsList(320, 4, 6400, "5D", 30, 279)
+		LoopAllCoinsList(320, 4, 6400, "5D", 15, 279)
 	}()
 	go func() {
 		LoopSaveCandle(&cr)
