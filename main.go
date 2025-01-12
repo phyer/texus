@@ -169,7 +169,7 @@ func ShowSysTime(cr *core.Core) {
 // onceCount：每次获取这个coin几个当前周期的candle数据
 // range: 随机的范围，从0开始到range个周期，作为查询的after值，也就是随机n个周期，去取之前的记录,对于2D，5D等数据，可以用来补全数据, range值越大，随机散点的范围越大, 越失焦
 
-func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, onceCount int, rge int) {
+func LoopAllCoinsList(delay int64, mdura int, barPeriod string, onceCount int, rge int) {
 	cr := core.Core{}
 	cr.Init()
 	allScoreChan := make(chan []string)
@@ -179,8 +179,7 @@ func LoopAllCoinsList(period int64, delay int64, mdura int, barPeriod string, on
 	go func() {
 		for {
 			tsi := time.Now().Unix()
-			//logrus.Info("tsi, period, delay, tsi%(period): ", tsi, period, delay, tsi%(period))
-			if tsi%(period) != delay {
+			if tsi%(int64(mdura)) != delay {
 				time.Sleep(1 * time.Second)
 				continue
 			}
@@ -255,57 +254,57 @@ func main() {
 	// 全员5m
 	go func() {
 		logrus.Info("LoopAllCoinsList - 5m")
-		LoopAllCoinsList(6, 0, 180, "5m", 20, 50) // 3分钟内完成，获取近4小时数据
+		LoopAllCoinsList(0, 180, "5m", 20, 50)
 	}()
 	// 全员15m candle
 	go func() {
 		logrus.Info("LoopAllCoinsList - 15m")
-		LoopAllCoinsList(19, 90, 360, "15m", 24, 100) // 6分钟内完成，获取近24小时数据
+		LoopAllCoinsList(90, 360, "15m", 24, 100)
 	}()
 	// 全员30m candle
 	go func() {
 		logrus.Info("LoopAllCoinsList - 30m")
-		LoopAllCoinsList(25, 0, 600, "30m", 48, 150) // 10分钟内完成，获取近2天数据
+		LoopAllCoinsList(0, 600, "30m", 48, 150)
 	}()
 	// 全员1H candle
 	go func() {
 		logrus.Info("LoopAllCoinsList - 1H")
-		LoopAllCoinsList(38, 0, 900, "1H", 72, 200) // 15分钟内完成，获取近3天数据
+		LoopAllCoinsList(0, 900, "1H", 72, 200)
 	}()
 	// 全员2H candle
 	go func() {
 		logrus.Info("LoopAllCoinsList - 2H")
-		LoopAllCoinsList(41, 0, 1200, "2H", 90, 250) // 20分钟内完成，获取近7天数据
+		LoopAllCoinsList(0, 1200, "2H", 90, 250)
 	}()
 	// 全员4小时candle
 	go func() {
 		logrus.Info("LoopAllCoinsList - 4H")
-		LoopAllCoinsList(69, 0, 1500, "4H", 120, 300) // 25分钟内完成，获取近20天数据
+		LoopAllCoinsList(0, 1500, "4H", 120, 300)
 	}()
 	// 全员6小时candle
 	go func() {
 		logrus.Info("LoopAllCoinsList - 6H")
-		LoopAllCoinsList(72, 0, 1800, "6H", 140, 350) // 30分钟内完成，获取近30天数据
+		LoopAllCoinsList(0, 1800, "6H", 140, 350)
 	}()
 	// 全员12小时candle
 	go func() {
 		logrus.Info("LoopAllCoinsList - 12H")
-		LoopAllCoinsList(89, 0, 2100, "12H", 160, 400) // 35分钟内完成，获取近2个月数据
+		LoopAllCoinsList(0, 2100, "12H", 160, 400)
 	}()
 	// 全员1Day candle & maX
 	go func() {
 		logrus.Info("LoopAllCoinsList - 1D")
-		LoopAllCoinsList(94, 4, 2400, "1D", 180, 500) // 40分钟内完成，获取近6个月数据
+		LoopAllCoinsList(4, 2400, "1D", 180, 500)
 	}()
 	// 全员2Day candle & maX
 	go func() {
 		logrus.Info("LoopAllCoinsList - 2D")
-		LoopAllCoinsList(192, 4, 3000, "2D", 200, 600) // 50分钟内完成，获取近1年数据
+		LoopAllCoinsList(4, 3000, "2D", 200, 600)
 	}()
 	// 全员5Day candle & maX
 	go func() {
 		logrus.Info("LoopAllCoinsList - 5D")
-		LoopAllCoinsList(320, 4, 3600, "5D", 250, 700) // 60分钟内完成，获取近2年数据
+		LoopAllCoinsList(4, 3600, "5D", 250, 700)
 	}()
 	go func() {
 		LoopSaveCandle(&cr)
