@@ -7,7 +7,6 @@ import (
 	// "fmt"
 	"math/rand"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -169,7 +168,7 @@ func ShowSysTime(cr *core.Core) {
 // onceCount：每次获取这个coin几个当前周期的candle数据
 // range: 随机的范围，从0开始到range个周期，作为查询的after值，也就是随机n个周期，去取之前的记录,对于2D，5D等数据，可以用来补全数据, range值越大，随机散点的范围越大, 越失焦
 
-func LoopAllCoinsList(delay int64, mdura int, barPeriod string, onceCount int, rge int) {
+func LoopAllCoinsList(mdura int, barPeriod string, rge int) {
 	cr := core.Core{}
 	cr.Init()
 	allScoreChan := make(chan []string)
@@ -179,7 +178,7 @@ func LoopAllCoinsList(delay int64, mdura int, barPeriod string, onceCount int, r
 	go func() {
 		for {
 			tsi := time.Now().Unix()
-			if tsi%(int64(mdura)) != delay {
+			if tsi%int64(mdura) != 0 {
 				time.Sleep(1 * time.Second)
 				continue
 			}
@@ -208,19 +207,24 @@ func LoopAllCoinsList(delay int64, mdura int, barPeriod string, onceCount int, r
 			// 修改随机逻辑
 			// 将随机范围分成两部分：80%的概率获取最近30%的数据，20%的概率获取剩余历史数据
 			var ct int
-			if rand.Float64() < 0.8 {
-				// 80%的概率获取最近30%的数据
-				ct = rand.Intn(rge * 3 / 10)
-			} else {
-				// 20%的概率获取剩余历史数据
-				ct = rand.Intn(rge)
+			randVal := rand.Float64()
+			switch {
+			case randVal < 0.7:
+				// 70%的概率获取最近15%的数据
+				ct = rand.Intn(rge * 15 / 100)
+			case randVal < 0.9:
+				// 20%的概率获取最近15%~55%的数据
+				ct = rand.Intn(rge*40/100) + (rge * 15 / 100)
+			default:
+				// 10%的概率获取最近55%~100%的数据
+				ct = rand.Intn(rge*45/100) + (rge * 55 / 100)
 			}
 
 			minutes, _ := cr.PeriodToMinutes(barPeriod)
 			tmi := nw.UnixMilli()
 			tmi = tmi - tmi%60000
 			tmi = tmi - (int64(ct) * minutes * 60000)
-			lm := strconv.Itoa(onceCount)
+			lm := "100"
 			// logrus.Info("instId: ", ary[i], " limit: ", lm, " onceCount:", onceCount)
 			if lm == "0" {
 				lm = "100"
@@ -254,57 +258,57 @@ func main() {
 	// 全员5m
 	go func() {
 		logrus.Info("LoopAllCoinsList - 5m")
-		LoopAllCoinsList(0, 180, "5m", 20, 50)
+		LoopAllCoinsList(180, "5m", 50)
 	}()
 	// 全员15m candle
 	go func() {
 		logrus.Info("LoopAllCoinsList - 15m")
-		LoopAllCoinsList(90, 360, "15m", 24, 100)
+		LoopAllCoinsList(360, "15m", 100)
 	}()
 	// 全员30m candle
 	go func() {
 		logrus.Info("LoopAllCoinsList - 30m")
-		LoopAllCoinsList(0, 600, "30m", 48, 150)
+		LoopAllCoinsList(600, "30m", 150)
 	}()
 	// 全员1H candle
 	go func() {
 		logrus.Info("LoopAllCoinsList - 1H")
-		LoopAllCoinsList(0, 900, "1H", 72, 200)
+		LoopAllCoinsList(900, "1H", 200)
 	}()
 	// 全员2H candle
 	go func() {
 		logrus.Info("LoopAllCoinsList - 2H")
-		LoopAllCoinsList(0, 1200, "2H", 90, 250)
+		LoopAllCoinsList(1200, "2H", 250)
 	}()
 	// 全员4小时candle
 	go func() {
 		logrus.Info("LoopAllCoinsList - 4H")
-		LoopAllCoinsList(0, 1500, "4H", 120, 300)
+		LoopAllCoinsList(1500, "4H", 300)
 	}()
 	// 全员6小时candle
 	go func() {
 		logrus.Info("LoopAllCoinsList - 6H")
-		LoopAllCoinsList(0, 1800, "6H", 140, 350)
+		LoopAllCoinsList(1800, "6H", 350)
 	}()
 	// 全员12小时candle
 	go func() {
 		logrus.Info("LoopAllCoinsList - 12H")
-		LoopAllCoinsList(0, 2100, "12H", 160, 400)
+		LoopAllCoinsList(2100, "12H", 400)
 	}()
 	// 全员1Day candle & maX
 	go func() {
 		logrus.Info("LoopAllCoinsList - 1D")
-		LoopAllCoinsList(4, 2400, "1D", 180, 500)
+		LoopAllCoinsList(2400, "1D", 500)
 	}()
 	// 全员2Day candle & maX
 	go func() {
 		logrus.Info("LoopAllCoinsList - 2D")
-		LoopAllCoinsList(4, 3000, "2D", 200, 600)
+		LoopAllCoinsList(3000, "2D", 600)
 	}()
 	// 全员5Day candle & maX
 	go func() {
 		logrus.Info("LoopAllCoinsList - 5D")
-		LoopAllCoinsList(4, 3600, "5D", 250, 700)
+		LoopAllCoinsList(3600, "5D", 700)
 	}()
 	go func() {
 		LoopSaveCandle(&cr)
