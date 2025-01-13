@@ -439,8 +439,8 @@ func main() {
 	}()
 	go func() {
 		for {
-			time.Sleep(30 * time.Minute)
 			CheckSortedSet(&cr)
+			time.Sleep(30 * time.Minute)
 		}
 	}()
 	// 永久阻塞
