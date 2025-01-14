@@ -224,10 +224,10 @@ func LoopAllCoinsList(mdura int, barPeriod string, rge int) {
 			tmi := nw.UnixMilli()
 			tmi = tmi - tmi%60000
 			tmi = tmi - (int64(ct) * minutes * 60000)
-			lm := "100"
+			lm := "20"
 			// logrus.Info("instId: ", ary[i], " limit: ", lm, " onceCount:", onceCount)
 			if lm == "0" {
-				lm = "100"
+				lm = "20"
 			}
 			restQ := core.RestQueue{
 				InstId: ary[i],
