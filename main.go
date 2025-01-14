@@ -425,12 +425,6 @@ func main() {
 	go func() {
 		core.WriteLogProcess(&cr)
 	}()
-	go func() {
-		for {
-			CheckSortedSet(&cr)
-			time.Sleep(30 * time.Minute)
-		}
-	}()
 	// 永久阻塞
 	select {}
 }
