@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/bitly/go-simplejson v0.5.0
 	github.com/go-redis/redis v6.15.9+incompatible
-	github.com/phyer/core v0.1.95
+	github.com/phyer/core v0.1.96
 	github.com/phyer/v5sdkgo v0.1.4
 	github.com/sirupsen/logrus v1.9.3
 )
