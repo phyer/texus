@@ -58,7 +58,73 @@
       "DOGE-USDT",
       "SOL-USDT",
       "DYDX-USDT"
-    ]
+    ],
+    "softCandleSegmentList": [{
+		    "startTime": "2021-12-04 20:00.000",
+				"enabled": false,
+				"seg": "1m"
+			},
+      {
+		    "startTime": "2021-12-04 20:00.000",
+				"enabled": true,
+				"seg": "3m"
+			},
+      {
+				"startTime": "2021-12-04 20:00.000",
+				"enabled": true,
+				"seg": "5m"
+			},
+			{
+				"startTime": "2021-12-04 20:00.000",
+				"enabled": true,
+				"seg": "15m"
+			},
+			{
+				"startTime": "2021-12-04 20:00.000",
+				"enabled": true,
+				"seg": "30m"
+			},
+			{
+				"startTime": "2021-12-04 20:00.000",
+				"enabled": true,
+				"seg": "1H"
+			},
+			{
+				"startTime": "2021-12-04 20:00.000",
+				"enabled": true,
+				"seg": "2H"
+			},
+			{
+				"startTime": "2021-12-04 20:00.000",
+				"enabled": true,
+				"seg": "4H"
+			},
+			{
+				"startTime": "2021-12-04 18:00.000",
+				"enabled": true,
+				"seg": "6H"
+			},
+			{
+				"startTime": "2021-12-04 12:00.000",
+				"enabled": true,
+				"seg": "12H"
+			},
+			{
+				"startTime": "2021-12-04 00:00.000",
+				"enabled": true,
+				"seg": "1D"
+			},
+			{
+				"startTime": "2021-12-04 00:00.000",
+				"enabled": true,
+				"seg": "2D"
+			},
+			{
+				"startTime": "2021-12-04 00:00.000",
+				"enabled": true,
+				"seg": "5D"
+			}
+		],
   },
 	"production": {
 		"redis": {
