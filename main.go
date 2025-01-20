@@ -303,7 +303,7 @@ func main() {
 	// 全员2Day candle & maX
 	go func() {
 		logrus.Info("LoopAllCoinsList - 2D")
-		LoopAllCoinsList(6000, "2D", 220)
+		LoopAllCoinsList(200, "2D", 220)
 	}()
 	// 全员5Day candle & maX
 	go func() {
