@@ -37,6 +37,9 @@
 			"index": 0,
       "description": ""
 		},
+		"sortedSet": {
+			"length": 3000
+		},
 		"credentialReadOnly": {
 			"secretKey": "D6D74DF9DD60A25BE2B27CA71D8F814D",
 			"baseUrl": "https://aws.okx.com",
