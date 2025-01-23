@@ -209,14 +209,14 @@ func LoopAllCoinsList(mdura int, barPeriod string, rge int) {
 			var ct int
 			randVal := rand.Float64()
 			switch {
-			case randVal < 0.7:
-				// 70%的概率获取最近15%的数据
+			case randVal < 0.3:
+				// 30%的概率获取最近15%的数据
 				ct = rand.Intn(rge * 15 / 100)
-			case randVal < 0.9:
+			case randVal < 0.5:
 				// 20%的概率获取最近15%~55%的数据
 				ct = rand.Intn(rge*40/100) + (rge * 15 / 100)
 			default:
-				// 10%的概率获取最近55%~100%的数据
+				// 50%的概率获取最近55%~100%的数据
 				ct = rand.Intn(rge*45/100) + (rge * 55 / 100)
 			}
 
