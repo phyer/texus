@@ -1,62 +1,63 @@
 {
-	"test": {
-		"redis": {
-			"url": "localhost:6379",
-			"password": "",
-			"index": 3,
+  "test": {
+    "redis": {
+      "url": "localhost:6379",
+      "password": "",
+      "index": 3,
       "description": ""
-		},
-		"credentialReadOnly": {
-			"secretKey": "D6D74DF9DD60A25BE2B27CA71D8F814D",
-			"baseUrl": "https://aws.okx.com",
-			"okAccessKey": "fe468418-5e40-433f-8d04-04951286d417",
-			"okAccessPassphrase": "M4pw71Id",
+    },
+    "credentialReadOnly": {
+      "secretKey": "D6D74DF9DD60A25BE2B27CA71D8F814D",
+      "baseUrl": "https://aws.okx.com",
+      "okAccessKey": "fe468418-5e40-433f-8d04-04951286d417",
+      "okAccessPassphrase": "M4pw71Id",
       "env": "realPlate",
       "ctype": "readOnly"
-		},
-		"connect": {
-			"loginSubUrl": "/users/self/verify",
-			"wsPrivateBaseUrl": "wsaws.okx.com:8443/ws/v5/private",
-			"wsPublicBaseUrl": "wsaws.okx.com:8443/ws/v5/public",
-			"restBaseUrl": "https://aws.okx.com"
-		},
-    "threads ":{
+    },
+    "connect": {
+      "loginSubUrl": "/users/self/verify",
+      "wsPrivateBaseUrl": "wsaws.okx.com:8443/ws/v5/private",
+      "wsPublicBaseUrl": "wsaws.okx.com:8443/ws/v5/public",
+      "restBaseUrl": "https://aws.okx.com"
+    },
+    "threads ": {
       "maxLenTickerStream": 512,
       "maxLenCandleStream": 1280,
-      "maxCandles":7,
-      "asyncChannels":40,
-      "maxTickers":3,
+      "maxCandles": 7,
+      "asyncChannels": 40,
+      "maxTickers": 3,
       "restPeriod": 180,
       "waitWs": 120
     }
   },
-	"stage": {
-		"redis": {
-			"url": "localhost:6379",
-			"password": "",
-			"index": 0,
+  "stage": {
+    "redis": {
+      "url": "localhost:6379",
+      "password": "",
+      "index": 0,
       "description": ""
-		},
-		"credentialReadOnly": {
-			"secretKey": "D6D74DF9DD60A25BE2B27CA71D8F814D",
-			"baseUrl": "https://aws.okx.com",
-			"okAccessKey": "fe468418-5e40-433f-8d04-04951286d417",
-			"okAccessPassphrase": "M4pw71Id",
+    },
+    "credentialReadOnly": {
+      "secretKey": "D6D74DF9DD60A25BE2B27CA71D8F814D",
+      "baseUrl": "https://aws.okx.com",
+      "okAccessKey": "fe468418-5e40-433f-8d04-04951286d417",
+      "okAccessPassphrase": "M4pw71Id",
       "env": "realPlate",
       "ctype": "readOnly"
-		},
-		"connect": {
-			"loginSubUrl": "/users/self/verify",
-			"wsPrivateBaseUrl": "wsaws.okx.com:8443/ws/v5/private",
-			"wsPublicBaseUrl": "wsaws.okx.com:8443/ws/v5/public",
-			"restBaseUrl": "https://aws.okx.com"
-		},
-		"focusList": [
+    },
+    "connect": {
+      "loginSubUrl": "/users/self/verify",
+      "wsPrivateBaseUrl": "wsaws.okx.com:8443/ws/v5/private",
+      "wsPublicBaseUrl": "wsaws.okx.com:8443/ws/v5/public",
+      "restBaseUrl": "https://aws.okx.com"
+    },
+    "focusList": [
       "ETH-USDT",
       "BTC-USDT",
       "OKB-USDT",
       "DOGE-USDT",
       "SOL-USDT",
+      "TRUMP-USDT",
       "DYDX-USDT"
     ],
     "softCandleSegmentList": [{
@@ -126,34 +127,34 @@
 			}
 		]
   },
-	"production": {
-		"redis": {
-			"url": "localhost:6379",
-			"password": "",
-			"index": 5
-		},
-		"credentialReadOnly": {
-			"secretKey": "D6D74DF9DD60A25BE2B27CA71D8F814D",
-			"baseUrl": "https://aws.okx.com",
-			"okAccessKey": "fe468418-5e40-433f-8d04-04951286d417",
+  "production": {
+    "redis": {
+      "url": "localhost:6379",
+      "password": "",
+      "index": 5
+    },
+    "credentialReadOnly": {
+      "secretKey": "D6D74DF9DD60A25BE2B27CA71D8F814D",
+      "baseUrl": "https://aws.okx.com",
+      "okAccessKey": "fe468418-5e40-433f-8d04-04951286d417",
       "env": "realPlate",
-			"okAccessPassphrase": "M4pw71Id",
+      "okAccessPassphrase": "M4pw71Id",
       "ctype": "readOnly"
-		},
-		"credentialMutable": {
-			"secretKey": "49F354BBEEA3D917FF190F94525ACEB7",
-			"baseUrl": "https://aws.okx.com",
-			"okAccessKey": "98afba4e-531b-4ec7-af2e-16e270b6b576",
+    },
+    "credentialMutable": {
+      "secretKey": "49F354BBEEA3D917FF190F94525ACEB7",
+      "baseUrl": "https://aws.okx.com",
+      "okAccessKey": "98afba4e-531b-4ec7-af2e-16e270b6b576",
       "env": "realPlate",
-			"okAccessPassphrase": "jitbyw-kArrac-zydva2",
+      "okAccessPassphrase": "jitbyw-kArrac-zydva2",
       "ctype": "Mutable"
-		},
-		"connect": {
-			"userId": "169408628405739520",
-			"loginSubUrl": "/users/self/verify",
-			"wsPrivateBaseUrl": "wsaws.okx.com:8443/ws/v5/private",
-			"wsPublicBaseUrl": "wsaws.okx.com:8443/ws/v5/public",
-			"restBaseUrl": "https://aws.okx.com"
-		}
-	}
+    },
+    "connect": {
+      "userId": "169408628405739520",
+      "loginSubUrl": "/users/self/verify",
+      "wsPrivateBaseUrl": "wsaws.okx.com:8443/ws/v5/private",
+      "wsPublicBaseUrl": "wsaws.okx.com:8443/ws/v5/public",
+      "restBaseUrl": "https://aws.okx.com"
+    }
+  }
 }
